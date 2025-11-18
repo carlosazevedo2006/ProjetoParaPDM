@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "snake-game",
-    "slug": "snake-game",
+    "name": "SnakeGame",
+    "slug": "SnakeGame",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
