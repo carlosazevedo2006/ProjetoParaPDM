@@ -1,76 +1,56 @@
-// src/components/Controls.tsx
-// Componentes de controlo: botões e suporte para acessibilidade.
-// O componente envia a nova direcção para o pai (Game).
-
 import React from "react";
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { Posicao } from "../types/types";
+import { DIRECOES } from "../utils/constants";
 
-type Props = {
-  onChangeDirecao: (nova: Posicao) => void;
-};
+interface ControlsProps {
+  onChangeDirecao: (dir: Posicao) => void;
+}
 
-export default function Controls({ onChangeDirecao }: Props) {
+export default function Controls({ onChangeDirecao }: ControlsProps) {
   return (
-    <View style={styles.wrapper}>
-      <TouchableOpacity
-        style={styles.botao}
-        onPress={() => onChangeDirecao({ x: 0, y: -1 })}
-        accessibilityLabel="Mover para cima"
-      >
-        <Text style={styles.txt}>⬆</Text>
-      </TouchableOpacity>
-
+    <View style={styles.container}>
+      {/* Linha de cima */}
       <View style={styles.row}>
-        <TouchableOpacity
-          style={styles.botao}
-          onPress={() => onChangeDirecao({ x: -1, y: 0 })}
-          accessibilityLabel="Mover para esquerda"
-        >
-          <Text style={styles.txt}>⬅</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.botao}
-          onPress={() => onChangeDirecao({ x: 1, y: 0 })}
-          accessibilityLabel="Mover para direita"
-        >
-          <Text style={styles.txt}>➡</Text>
+        <TouchableOpacity style={styles.button} onPress={() => onChangeDirecao(DIRECOES.CIMA)}>
+          <Text style={styles.text}>↑</Text>
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity
-        style={styles.botao}
-        onPress={() => onChangeDirecao({ x: 0, y: 1 })}
-        accessibilityLabel="Mover para baixo"
-      >
-        <Text style={styles.txt}>⬇</Text>
-      </TouchableOpacity>
+      {/* Linha do meio */}
+      <View style={styles.row}>
+        <TouchableOpacity style={styles.button} onPress={() => onChangeDirecao(DIRECOES.ESQUERDA)}>
+          <Text style={styles.text}>←</Text>
+        </TouchableOpacity>
+
+        <View style={[styles.button, { backgroundColor: "transparent" }]} />
+
+        <TouchableOpacity style={styles.button} onPress={() => onChangeDirecao(DIRECOES.DIREITA)}>
+          <Text style={styles.text}>→</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Linha de baixo */}
+      <View style={styles.row}>
+        <TouchableOpacity style={styles.button} onPress={() => onChangeDirecao(DIRECOES.BAIXO)}>
+          <Text style={styles.text}>↓</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    alignItems: "center",
-    marginTop: 12,
-  },
-  row: {
-    flexDirection: "row",
-    marginVertical: 6,
-  },
-  botao: {
-    width: 64,
-    height: 64,
-    borderRadius: 12,
-    backgroundColor: "#efefef",
+  container: { marginTop: 20, alignItems: "center", justifyContent: "center" },
+  row: { flexDirection: "row" },
+  button: {
+    width: 60,
+    height: 60,
+    backgroundColor: "#43a047",
     alignItems: "center",
     justifyContent: "center",
-    marginHorizontal: 10,
-    elevation: 2,
+    margin: 5,
+    borderRadius: 8,
   },
-  txt: {
-    fontSize: 28,
-    color: "#222",
-  },
+  text: { fontSize: 32, color: "#fff", fontWeight: "700" },
 });
