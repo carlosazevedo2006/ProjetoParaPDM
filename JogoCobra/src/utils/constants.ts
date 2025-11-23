@@ -1,33 +1,52 @@
-// src/utils/constants.ts
-import { Posicao } from "../types/types";
+// Configurações do jogo
+export const GRID_SIZE = 10;
+export const CELL_MARGIN = 1;
 
-// Tamanho do tabuleiro (12x12 quadrículas)
-export const GRID_SIZE = 12;
+// Direções de movimento
+export const DIRECTIONS = {
+  UP: { x: 0, y: -1 },
+  DOWN: { x: 0, y: 1 },
+  LEFT: { x: -1, y: 0 },
+  RIGHT: { x: 1, y: 0 },
+} as const;
 
-// Tamanho de cada célula em pixels
-export const CELULA = 30;
-
-// DIREÇÕES PERMITIDAS (sem diagonais)
-export const DIRECOES = {
-  CIMA: { x: 0, y: -1 },
-  BAIXO: { x: 0, y: 1 },
-  ESQUERDA: { x: -1, y: 0 },
-  DIREITA: { x: 1, y: 0 },
+// Cores do jogo
+export const COLORS = {
+  background: '#0a0a0a',
+  grid: '#1a1a1a',
+  gridLine: '#2a2a2a',
+  snake: '#4CAF50',
+  snakeHead: '#2E7D32',
+  enemy: '#7B1FA2',
+  enemyHead: '#6A1B9A',
+  food: '#F44336',
+  text: '#FFFFFF',
+  textSecondary: '#BBBBBB',
+  button: '#4CAF50',
+  buttonText: '#FFFFFF',
 };
 
-// Função para gerar posição aleatória da comida
-export function gerarComida(cobra: Posicao[]): Posicao {
-  let pos: Posicao;
-  do {
-    pos = {
-      x: Math.floor(Math.random() * GRID_SIZE),
-      y: Math.floor(Math.random() * GRID_SIZE),
-    };
-  } while (cobra.some((seg) => seg.x === pos.x && seg.y === pos.y));
-  return pos;
-}
+// Gerar comida em posição aleatória
+export const generateFood = (snake: Position[], enemy: Position[] = []): Position => {
+  const occupied = new Set([
+    ...snake.map(pos => `${pos.x},${pos.y}`),
+    ...enemy.map(pos => `${pos.x},${pos.y}`)
+  ]);
+  
+  const available: Position[] = [];
+  for (let x = 0; x < GRID_SIZE; x++) {
+    for (let y = 0; y < GRID_SIZE; y++) {
+      if (!occupied.has(`${x},${y}`)) {
+        available.push({ x, y });
+      }
+    }
+  }
+  
+  return available.length > 0 
+    ? available[Math.floor(Math.random() * available.length)]
+    : { x: 0, y: 0 };
+};
 
-// Função para comparar posições
-export function igual(a: Posicao, b: Posicao): boolean {
-  return a.x === b.x && a.y === b.y;
-}
+// Comparar posições
+export const positionsEqual = (a: Position, b: Position): boolean => 
+  a.x === b.x && a.y === b.y;
