@@ -1,14 +1,15 @@
 // App.tsx
-// Ponto de entrada do projecto JogoCobra (Expo + TypeScript)
-
 import React from "react";
 import { SafeAreaView, StyleSheet } from "react-native";
-import Game from "./src/components/Game";
+import AppNavigator from "./src/navigation/AppNavigator";
+import { SettingsProvider } from "./src/context/SettingsContext";
 
 export default function App() {
   return (
     <SafeAreaView style={styles.container}>
-      <Game />
+      <SettingsProvider>
+        <AppNavigator />
+      </SettingsProvider>
     </SafeAreaView>
   );
 }
@@ -17,7 +18,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#121212",
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

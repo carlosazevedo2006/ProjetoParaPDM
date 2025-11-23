@@ -1,88 +1,106 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+// src/context/SettingsContext.tsx
+// Contexto global para definições do jogo
+// - guarda persistente via AsyncStorage
+// - disponibiliza getters / setters e a dificuldade seleccionada
+
+import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DIFICULDADES, DificuldadeDef } from "../config/dificuldades";
 
-// Tipo de dados guardados nas definições
-type SettingsType = {
-  corTabuleiro: string;
-  setCorTabuleiro: (c: string) => void;
+export type Settings = {
+  // presets
+  dificuldadeKey: "FACIL" | "MEDIO" | "DIFICIL" | "PERSONALIZADO";
 
-  corCobra: string;
-  setCorCobra: (c: string) => void;
-
-  gridSize: number;
-  setGridSize: (g: number) => void;
-
-  tema: "claro" | "escuro";
-  setTema: (t: "claro" | "escuro") => void;
+  // personalizados (usados quando dificuldadeKey === "PERSONALIZADO")
+  customVelocidadeMs: number;   // ms per passo (ex: 300)
+  customAumentaVel: boolean;
+  customIncrementoMs: number;   // redução por 3 comidas
+  customGridSize: number;       // 8..20
+  customCobraInimiga: boolean;
+  // visuais
+  corCobra: string;             // hex
+  corTabuleiro: string;         // hex
 };
 
-// Criar o contexto
-const SettingsContext = createContext<SettingsType | undefined>(undefined);
+const DEFAULT_SETTINGS: Settings = {
+  dificuldadeKey: "MEDIO",
+  customVelocidadeMs: DIFICULDADES.MEDIO.velocidadeBaseMs,
+  customAumentaVel: DIFICULDADES.MEDIO.aumentaVelocidade,
+  customIncrementoMs: DIFICULDADES.MEDIO.incrementoPor3ComidasMs ?? 20,
+  customGridSize: 12,
+  customCobraInimiga: false,
+  corCobra: "#43a047",
+  corTabuleiro: "#ffffff",
+};
 
-// Provider que envolve toda a aplicação
+const STORAGE_KEY = "@JogoCobra_Settings_v2";
+
+type ContextType = {
+  settings: Settings;
+  setSettings: (s: Settings) => void;
+  // utilitários
+  getActiveDificuldade: () => DificuldadeDef | null;
+};
+
+const SettingsContext = createContext<ContextType | undefined>(undefined);
+
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [corTabuleiro, setCorTabuleiro] = useState("#1a1a1a");
-  const [corCobra, setCorCobra] = useState("lime");
-  const [gridSize, setGridSize] = useState(12);
-  const [tema, setTema] = useState<"claro" | "escuro">("escuro");
+  const [settings, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS);
 
-  // ------------------------------
-  // Carregar definições guardadas
-  // ------------------------------
+  // Carregar de AsyncStorage no arranque
   useEffect(() => {
-    async function carregar() {
-      const s = await AsyncStorage.getItem("SETTINGS");
-      if (s) {
-        const obj = JSON.parse(s);
-        if (obj.corTabuleiro) setCorTabuleiro(obj.corTabuleiro);
-        if (obj.corCobra) setCorCobra(obj.corCobra);
-        if (obj.gridSize) setGridSize(obj.gridSize);
-        if (obj.tema) setTema(obj.tema);
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as Partial<Settings>;
+          setSettingsState((prev) => ({ ...prev, ...parsed }));
+        }
+      } catch (e) {
+        console.warn("SettingsContext: falha a carregar settings", e);
       }
-    }
-    carregar();
+    })();
   }, []);
 
-  // ------------------------------
-  // Guardar automaticamente quando muda
-  // ------------------------------
+  // Guardar automaticamente quando settings mudam
   useEffect(() => {
-    const save = async () => {
-      await AsyncStorage.setItem(
-        "SETTINGS",
-        JSON.stringify({
-          corTabuleiro,
-          corCobra,
-          gridSize,
-          tema,
-        })
-      );
-    };
-    save();
-  }, [corTabuleiro, corCobra, gridSize, tema]);
+    (async () => {
+      try {
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+      } catch (e) {
+        console.warn("SettingsContext: falha a gravar settings", e);
+      }
+    })();
+  }, [settings]);
+
+  function setSettings(s: Settings) {
+    setSettingsState(s);
+  }
+
+  // Devolve a definição activa baseada na dificuldade seleccionada
+  function getActiveDificuldade(): DificuldadeDef | null {
+    if (settings.dificuldadeKey === "PERSONALIZADO") {
+      // construir objecto "virtual" baseado em custom settings
+      return {
+        key: "FACIL", // apenas placeholder
+        label: "Personalizado",
+        velocidadeBaseMs: settings.customVelocidadeMs,
+        aumentaVelocidade: settings.customAumentaVel,
+        incrementoPor3ComidasMs: settings.customIncrementoMs,
+        cobraInimiga: settings.customCobraInimiga,
+        inimigaSpeedFactor: settings.customCobraInimiga ? 1.1 : 1.0,
+      };
+    }
+    return DIFICULDADES[settings.dificuldadeKey] ?? null;
+  }
 
   return (
-    <SettingsContext.Provider
-      value={{
-        corTabuleiro,
-        setCorTabuleiro,
-
-        corCobra,
-        setCorCobra,
-
-        gridSize,
-        setGridSize,
-
-        tema,
-        setTema,
-      }}
-    >
+    <SettingsContext.Provider value={{ settings, setSettings, getActiveDificuldade }}>
       {children}
     </SettingsContext.Provider>
   );
 }
 
-// Hook para aceder ao contexto
 export function useSettings() {
   const ctx = useContext(SettingsContext);
   if (!ctx) throw new Error("useSettings deve ser usado dentro do SettingsProvider");
