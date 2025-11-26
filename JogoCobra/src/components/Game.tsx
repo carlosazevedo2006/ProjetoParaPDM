@@ -15,14 +15,22 @@ import { GRID_SIZE, CELULA, DIRECOES, gerarComida, igual } from "../utils/consta
 import { Posicao } from "../types/types";
 
 /**
- * VERSÃO COM OS 3 MODOS:
- *  - Fácil  (jogo normal)
- *  - Médio  (aumenta velocidade a cada fruta)
- *  - Difícil (cobra inimiga que persegue o jogador)
+ * Game.tsx — versão completa dividida em 4 partes
  *
- * Apenas UMA tela de menu, com seleção de modo acima do botão Jogar.
+ * Fluxo:
+ * 1) Tela de Boas-Vindas (com instruções) — aparece sempre
+ * 2) Tela "Play" simples (botão JOGAR) — leva à seleção de modo
+ * 3) Tela de Seleção de Modo (Fácil / Médio / Difícil)
+ * 4) Contagem
+ * 5) Jogo
+ *
+ * Modos:
+ * - FACIL  : velocidade constante
+ * - MEDIO  : velocidade aumenta (intervalo diminui) a cada fruta comida
+ * - DIFICIL: cobra inimiga que persegue a cabeça do jogador
  */
 
+// Intervalo base em ms
 const MOVE_INTERVAL_MS = 300;
 const STORAGE_KEY_MELHOR = "@JogoCobra_MelhorPontuacao";
 const STORAGE_KEY_COR = "@JogoCobra_CorCobra";
@@ -30,10 +38,11 @@ const STORAGE_KEY_COR = "@JogoCobra_CorCobra";
 type Modo = "FACIL" | "MEDIO" | "DIFICIL";
 
 export default function Game() {
+  // posição inicial
   const startX = Math.floor(GRID_SIZE / 2);
   const startY = Math.floor(GRID_SIZE / 2);
 
-  // Estados principais
+  // ------------------ ESTADOS PRINCIPAIS ------------------
   const [cobra, setCobra] = useState<Posicao[]>([{ x: startX, y: startY }]);
   const [direcao, setDirecao] = useState<Posicao>(DIRECOES.DIREITA);
   const [comida, setComida] = useState<Posicao>(() => gerarComida([{ x: startX, y: startY }]));
@@ -46,14 +55,28 @@ export default function Game() {
 
   const [corCobra, setCorCobra] = useState<string>("#43a047");
 
-  // ---------------- NOVOS ESTADOS DOS MODOS ----------------
+  // ------------------ FLUXO E MODOS ------------------
+  // showWelcome: true = exibe a tela de boas-vindas
+  const [showWelcome, setShowWelcome] = useState<boolean>(true);
+
+  // showPlayScreen: true = tela simples de "Play" (após welcome)
+  const [showPlayScreen, setShowPlayScreen] = useState<boolean>(false);
+
+  // showModeSelection: true = tela de seleção de modos (após Play)
+  const [showModeSelection, setShowModeSelection] = useState<boolean>(false);
+
+  // modo escolhido (null = nenhum ainda)
   const [modoSelecionado, setModoSelecionado] = useState<Modo | null>(null);
+
+  // velocidade (ms entre passos) — estado mutável para o modo MEDIO
   const [velocidade, setVelocidade] = useState<number>(MOVE_INTERVAL_MS);
 
+  // cobra inimiga (para o modo DIFICIL)
   const [cobraInimiga, setCobraInimiga] = useState<Posicao[]>([
     { x: GRID_SIZE - 2, y: GRID_SIZE - 2 },
   ]);
 
+  // ------------------ REFs E ANIMAÇÕES ------------------
   const latestDirRef = useRef<Posicao>(direcao);
   const comidaRef = useRef<Posicao>(comida);
   const eatAnim = useRef(new Animated.Value(1)).current;
@@ -65,18 +88,42 @@ export default function Game() {
     new Animated.ValueXY({ x: startX * CELULA, y: startY * CELULA }),
   ]);
 
-  // Carregar alta pontuação e cor da cobra guardada
+  // animação "pulse" para a tela de boas-vindas
+  const welcomePulse = useRef(new Animated.Value(1)).current;
+
+  // ------------------ CARREGAR CONFIGURAÇÕES SALVAS ------------------
   useEffect(() => {
     (async () => {
       try {
         const raw = await AsyncStorage.getItem(STORAGE_KEY_MELHOR);
         if (raw) setMelhor(Number(raw));
-
         const savedCor = await AsyncStorage.getItem(STORAGE_KEY_COR);
         if (savedCor) setCorCobra(savedCor);
-      } catch {}
+      } catch (e) {
+        // ignorar erros de leitura
+      }
     })();
   }, []);
+
+  // iniciar animação da welcome
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(welcomePulse, {
+          toValue: 1.06,
+          duration: 600,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(welcomePulse, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [welcomePulse]);
 
   useEffect(() => {
     latestDirRef.current = direcao;
@@ -86,12 +133,12 @@ export default function Game() {
     comidaRef.current = comida;
   }, [comida]);
 
-  // ---------------- LOOP com requestAnimationFrame ----------------
+  // ------------------ LOOP PRINCIPAL (requestAnimationFrame) ------------------
   const loop = (timestamp?: number) => {
     if (!lastTimeRef.current) lastTimeRef.current = timestamp || 0;
-
     const delta = (timestamp || 0) - lastTimeRef.current;
 
+    // usar 'velocidade' como base do tick
     if (delta >= velocidade && jogando) {
       step();
       lastTimeRef.current = timestamp || 0;
@@ -102,17 +149,20 @@ export default function Game() {
 
   useEffect(() => {
     rafRef.current = requestAnimationFrame(loop);
-    return () => rafRef.current && cancelAnimationFrame(rafRef.current);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, [jogando, velocidade]);
 
-  // ---------------- PASSO DO JOGO ----------------
+  // ------------------ FIM PARTE 1 ------------------
+  // ------------------ MOVIMENTO DA COBRA ------------------
   function step() {
     setCobra((prev) => {
       const head = prev[0];
       const dir = latestDirRef.current;
-      const novaHead = { x: head.x + dir.x, y: head.y + dir.y };
+      const novaHead: Posicao = { x: head.x + dir.x, y: head.y + dir.y };
 
-      // Colisões
+      // colisão com paredes
       if (
         novaHead.x < 0 ||
         novaHead.x >= GRID_SIZE ||
@@ -123,6 +173,7 @@ export default function Game() {
         return prev;
       }
 
+      // colisão com o próprio corpo
       if (prev.some((seg) => igual(seg, novaHead))) {
         terminarJogo();
         return prev;
@@ -130,22 +181,32 @@ export default function Game() {
 
       let novaCobra = [novaHead, ...prev];
 
-      // -------- Comer comida --------
+      // -------------------------------------------
+      //              COMER A MAÇÃ
+      // -------------------------------------------
       if (igual(novaHead, comidaRef.current)) {
         setPontos((p) => {
-          const np = p + 1;
-          if (np > melhor) {
-            setMelhor(np);
-            AsyncStorage.setItem(STORAGE_KEY_MELHOR, String(np));
+          const novoTotal = p + 1;
+
+          // atualizar melhor pontuação
+          if (novoTotal > melhor) {
+            setMelhor(novoTotal);
+            AsyncStorage.setItem(STORAGE_KEY_MELHOR, String(novoTotal)).catch(() => {});
           }
-          return np;
+
+          // modo MEDIO → aumentar velocidade (diminuir intervalo)
+          if (modoSelecionado === "MEDIO") {
+            setVelocidade((v) => Math.max(80, v - 18)); // limite mínimo
+          }
+
+          return novoTotal;
         });
 
-        // Animação comida
+        // animação ao comer
         Animated.sequence([
           Animated.timing(eatAnim, {
             toValue: 1.4,
-            duration: 90,
+            duration: 100,
             easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
@@ -157,19 +218,18 @@ export default function Game() {
           }),
         ]).start();
 
-        const nova = gerarComida(novaCobra);
-        setComida(nova);
-        comidaRef.current = nova;
-
-        // -------- Aceleração (MÉDIO) --------
-        if (modoSelecionado === "MEDIO") {
-          setVelocidade((v) => Math.max(80, v - 20));
-        }
+        // gerar nova comida
+        const novaComida = gerarComida(novaCobra);
+        setComida(novaComida);
+        comidaRef.current = novaComida;
       } else {
+        // remover cauda
         novaCobra.pop();
       }
 
-      // Animação dos segmentos
+      // -------------------------------------------
+      //  ANIMAÇÃO DO MOVIMENTO (cada segmento)
+      // -------------------------------------------
       while (animSegments.current.length < novaCobra.length) {
         const idx = animSegments.current.length;
         animSegments.current.push(
@@ -189,229 +249,308 @@ export default function Game() {
         }).start();
       });
 
-      // -------- Cobra inimiga (DIFÍCIL) --------
-      if (modoSelecionado === "DIFICIL") {
-        const [hx, hy] = [novaCobra[0].x, novaCobra[0].y];
-        const [ix, iy] = [cobraInimiga[0].x, cobraInimiga[0].y];
+      return novaCobra;
+    });
 
-        let movX = ix < hx ? 1 : ix > hx ? -1 : 0;
-        let movY = iy < hy ? 1 : iy > hy ? -1 : 0;
+    // -------------------------------------------
+    //                MODO DIFÍCIL
+    //    cobra inimiga segue o jogador
+    // -------------------------------------------
+    if (modoSelecionado === "DIFICIL") {
+      moverCobraInimiga();
+    }
+  }
 
-        const novaInimiga = [{ x: ix + movX, y: iy + movY }];
+  // ------------------ COBRA INIMIGA (MODO DIFÍCIL) ------------------
+  function moverCobraInimiga() {
+    setCobraInimiga((prev) => {
+      const head = prev[0];
+      const target = cobra[0];
 
-        // Colisão com jogador
-        if (igual(novaInimiga[0], novaCobra[0]) || novaCobra.some((seg) => igual(seg, novaInimiga[0]))) {
-          terminarJogo();
-          return novaCobra;
-        }
+      // movimento "na direção da cabeça do jogador"
+      const dx = target.x - head.x;
+      const dy = target.y - head.y;
 
-        setCobraInimiga(novaInimiga);
+      const stepX = dx === 0 ? 0 : dx > 0 ? 1 : -1;
+      const stepY = dy === 0 ? 0 : dy > 0 ? 1 : -1;
+
+      const nova = { x: head.x + stepX, y: head.y + stepY };
+
+      // colisão do inimigo com o jogador
+      if (igual(nova, target)) {
+        terminarJogo();
+        return prev;
       }
 
-      return novaCobra;
+      // colisão com paredes
+      if (
+        nova.x < 0 ||
+        nova.x >= GRID_SIZE ||
+        nova.y < 0 ||
+        nova.y >= GRID_SIZE
+      ) {
+        return prev; // inimigo para
+      }
+
+      return [nova]; // inimigo tem sempre 1 segmento
     });
   }
 
-  // ---------------- Direção ----------------
+  // ------------------ DIREÇÃO DO JOGADOR ------------------
   function requestDirecao(nova: Posicao) {
     const atual = latestDirRef.current;
+    // impedir inversão direta
     if (nova.x === -atual.x && nova.y === -atual.y) return;
+
     latestDirRef.current = nova;
     setDirecao(nova);
+
+    // resposta imediata
     step();
   }
 
-  // ---------------- SWIPE ----------------
+  // ------------------ PANRESPONDER (SWIPE) ------------------
   const pan = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
-      onPanResponderRelease: (_, g) => {
+      onPanResponderRelease: (_evt, g) => {
         const { dx, dy } = g;
-        const t = 12;
+        const threshold = 12;
+
         if (Math.abs(dx) > Math.abs(dy)) {
-          dx > t ? requestDirecao(DIRECOES.DIREITA) : dx < -t && requestDirecao(DIRECOES.ESQUERDA);
+          dx > threshold
+            ? requestDirecao(DIRECOES.DIREITA)
+            : dx < -threshold && requestDirecao(DIRECOES.ESQUERDA);
         } else {
-          dy > t ? requestDirecao(DIRECOES.BAIXO) : dy < -t && requestDirecao(DIRECOES.CIMA);
+          dy > threshold
+            ? requestDirecao(DIRECOES.BAIXO)
+            : dy < -threshold && requestDirecao(DIRECOES.CIMA);
         }
       },
     })
   ).current;
 
-  // ---------------- FIM PARTE 1 ----------------
-  // ---------------- TERMINAR / REINICIAR ----------------
+  // ------------------ TERMINAR JOGO ------------------
   function terminarJogo() {
     setJogando(false);
     setGameOver(true);
   }
 
+  // ------------------ REINICIAR ------------------
   function reiniciar() {
     setCobra([{ x: startX, y: startY }]);
+    setCobraInimiga([{ x: GRID_SIZE - 2, y: GRID_SIZE - 2 }]);
     latestDirRef.current = DIRECOES.DIREITA;
     setDirecao(DIRECOES.DIREITA);
 
-    const initComida = gerarComida([{ x: startX, y: startY }]);
-    setComida(initComida);
-    comidaRef.current = initComida;
+    const nova = gerarComida([{ x: startX, y: startY }]);
+    setComida(nova);
+    comidaRef.current = nova;
 
     setPontos(0);
+    setGameOver(false);
+
+    // reset da velocidade
     setVelocidade(MOVE_INTERVAL_MS);
-    setCobraInimiga([{ x: GRID_SIZE - 2, y: GRID_SIZE - 2 }]);
 
     animSegments.current = [
-      new Animated.ValueXY({ x: startX * CELULA, y: startY * CELULA }),
+      new Animated.ValueXY({
+        x: startX * CELULA,
+        y: startY * CELULA,
+      }),
     ];
 
-    setGameOver(false);
     iniciarContagem();
   }
 
-  // ---------------- CONTAGEM INICIAL ----------------
+  // ------------------ CONTAGEM ------------------
   function iniciarContagem() {
     setContador(3);
     let c = 3;
-    const id = setInterval(() => {
+
+    const interval = setInterval(() => {
       c -= 1;
       setContador(c);
+
       if (c <= 0) {
-        clearInterval(id);
+        clearInterval(interval);
         setContador(null);
+
+        // iniciar jogo
         setJogando(true);
         lastTimeRef.current = 0;
       }
     }, 1000);
   }
 
-  // ---------------- MENU PRINCIPAL (APENAS UMA TELA) ----------------
-  if (!jogando && !gameOver && contador === null) {
+  // ------------------ FIM PARTE 2 ------------------
+  // ------------------ RENDER ------------------
+
+  // =====================================================
+  //               TELA DE BOAS-VINDAS
+  // =====================================================
+  if (showWelcome) {
     return (
       <View style={styles.root}>
-
-        <Text style={styles.title}>JogoCobra — SNAKE</Text>
-
-        {/* --------- BOTÕES DE MODO (ACIMA DO JOGAR) --------- */}
-        <Text style={[styles.instructionsTitle, { marginBottom: 8 }]}>
-          Escolhe o Modo
-        </Text>
-
-        <View style={{ flexDirection: "row", marginBottom: 12 }}>
-          {(["FACIL", "MEDIO", "DIFICIL"] as Modo[]).map((m) => (
-            <TouchableOpacity
-              key={m}
-              onPress={() => setModoSelecionado(m)}
-              style={[
-                styles.modeBtn,
-                modoSelecionado === m && styles.modeBtnSelected,
-              ]}
-            >
-              <Text style={styles.modeBtnText}>
-                {m === "FACIL"
-                  ? "Fácil"
-                  : m === "MEDIO"
-                  ? "Médio"
-                  : "Difícil"}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* --------- DESCRIÇÃO DO MODO --------- */}
-        <Text style={[styles.instructionsText, { marginBottom: 16 }]}>
-          {!modoSelecionado &&
-            "Escolhe um modo para desbloquear o botão JOGAR."}
-          {modoSelecionado === "FACIL" &&
-            "Modo Fácil — velocidade constante, ideal para aprender."}
-          {modoSelecionado === "MEDIO" &&
-            "Modo Médio — a cobra acelera sempre que come fruta."}
-          {modoSelecionado === "DIFICIL" &&
-            "Modo Difícil — uma cobra inimiga persegue-te!"}
-        </Text>
-
-        {/* --------- BOTÃO JOGAR (APENAS ATIVO QUANDO HÁ MODO) --------- */}
-        <TouchableOpacity
-          style={[
-            styles.playBtn,
-            !modoSelecionado && { backgroundColor: "#666" },
-          ]}
-          onPress={() => modoSelecionado && iniciarContagem()}
-          disabled={!modoSelecionado}
+        <Animated.View
+          style={{
+            transform: [{ scale: welcomePulse }],
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
-          <Text style={styles.playText}>JOGAR</Text>
+          <Text style={styles.title}>Jogo Cobra</Text>
+          <Text style={styles.subtitle}>Bem-vindo!</Text>
+        </Animated.View>
+
+        <TouchableOpacity
+          style={styles.playBtn}
+          onPress={() => {
+            setShowWelcome(false);
+            setShowPlayScreen(true);
+          }}
+        >
+          <Text style={styles.playText}>Continuar</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // =====================================================
+  //               TELA DE PLAY (SIMPLIFICADA)
+  // =====================================================
+  if (showPlayScreen) {
+    return (
+      <View style={styles.root}>
+        <Text style={styles.title}>Jogar</Text>
+
+        <TouchableOpacity
+          style={styles.playBtn}
+          onPress={() => {
+            setShowPlayScreen(false);
+            setShowModeSelection(true);
+          }}
+        >
+          <Text style={styles.playText}>Escolher Modo</Text>
         </TouchableOpacity>
 
-        {/* --------- INSTRUÇÕES --------- */}
         <View style={styles.instructionsBox}>
           <Text style={styles.instructionsTitle}>Como Jogar</Text>
-          <Text style={styles.instructionsText}>
-            • Deslize o dedo (swipe) no tabuleiro para mover a cobra.
-          </Text>
-          <Text style={styles.instructionsText}>
-            • Evite paredes e o próprio corpo.
-          </Text>
-          <Text style={styles.instructionsText}>
-            • Capture a fruta para ganhar pontos.
-          </Text>
+          <Text style={styles.instructionsText}>• Deslize o dedo para mover a cobra.</Text>
+          <Text style={styles.instructionsText}>• Evite paredes e seu próprio corpo.</Text>
+          <Text style={styles.instructionsText}>• Coma a maçã para ganhar pontos.</Text>
         </View>
       </View>
     );
   }
 
-  // ---------------- CONTAGEM ----------------
+  // =====================================================
+  //            TELA DE SELEÇÃO DE MODO
+  // =====================================================
+  if (showModeSelection) {
+    return (
+      <View style={styles.root}>
+        <Text style={styles.title}>Escolher Modo</Text>
+
+        {/* FÁCIL */}
+        <TouchableOpacity
+          style={styles.playBtn}
+          onPress={() => {
+            setModoSelecionado("FACIL");
+            setShowModeSelection(false);
+            iniciarContagem();
+          }}
+        >
+          <Text style={styles.playText}>Fácil</Text>
+        </TouchableOpacity>
+
+        {/* MÉDIO */}
+        <TouchableOpacity
+          style={styles.playBtn}
+          onPress={() => {
+            setModoSelecionado("MEDIO");
+            setShowModeSelection(false);
+            iniciarContagem();
+          }}
+        >
+          <Text style={styles.playText}>Médio</Text>
+        </TouchableOpacity>
+
+        {/* DIFÍCIL */}
+        <TouchableOpacity
+          style={styles.playBtn}
+          onPress={() => {
+            setModoSelecionado("DIFICIL");
+            setShowModeSelection(false);
+            iniciarContagem();
+          }}
+        >
+          <Text style={styles.playText}>Difícil</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // =====================================================
+  //                      CONTAGEM
+  // =====================================================
   if (contador !== null) {
     return (
       <View style={styles.root}>
         <Text style={styles.countdown}>
-          {contador > 0 ? String(contador) : "JÁ!"}
+          {contador > 0 ? contador : "JÁ!"}
         </Text>
       </View>
     );
   }
 
-  // ---------------- GAME OVER ----------------
+  // =====================================================
+  //                      GAME OVER
+  // =====================================================
   if (gameOver) {
     return (
       <View style={styles.root}>
         <Text style={styles.gameOverTitle}>GAME OVER</Text>
+
         <Text style={styles.score}>Pontuação: {pontos}</Text>
-        <Text style={styles.score}>Recorde: {melhor}</Text>
+        <Text style={styles.score}>Melhor: {melhor}</Text>
 
         <TouchableOpacity style={styles.playBtn} onPress={reiniciar}>
-          <Text style={styles.playText}>REINICIAR</Text>
+          <Text style={styles.playText}>Reiniciar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.playBtn, { backgroundColor: "#777" }]}
+          style={[styles.playBtn, { backgroundColor: "#1976d2", marginTop: 10 }]}
           onPress={() => {
-            // Volta ao menu
             setGameOver(false);
-            setJogando(false);
+            setShowModeSelection(true);
             setModoSelecionado(null);
             setVelocidade(MOVE_INTERVAL_MS);
-
-            setCobra([{ x: startX, y: startY }]);
-            latestDirRef.current = DIRECOES.DIREITA;
           }}
         >
-          <Text style={styles.playText}>Menu</Text>
+          <Text style={styles.playText}>Voltar ao Menu</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // ---------------- PARTE 2 TERMINA AQUI ----------------
-  // ---------------- JOGO ATIVO ----------------
+  // =====================================================
+  //                 JOGO ATIVO — TABULEIRO
+  // =====================================================
+
   return (
     <View style={styles.root} {...pan.panHandlers}>
       <Text style={styles.scoreTop}>
-        Pontos: {pontos} · Recorde: {melhor}
+        Modo: {modoSelecionado} | Pontos: {pontos} | Melhor: {melhor}
       </Text>
 
       <View style={styles.board}>
-        {/* GRID */}
+        {/* Grid */}
         {Array.from({ length: GRID_SIZE }).map((_, row) =>
           Array.from({ length: GRID_SIZE }).map((_, col) => (
             <View
-              key={`grid-${row}-${col}`}
+              key={`g-${row}-${col}`}
               style={{
                 position: "absolute",
                 width: CELULA,
@@ -419,36 +558,50 @@ export default function Game() {
                 left: col * CELULA,
                 top: row * CELULA,
                 borderWidth: 0.5,
-                borderColor: "#999",
+                borderColor: "#ddd",
                 borderStyle: "dashed",
               }}
             />
           ))
         )}
 
-        {/* COBRA DO JOGADOR */}
+        {/* Cobra do Jogador */}
         {cobra.map((seg, idx) => {
           const anim = animSegments.current[idx];
-          const transformStyle = anim
+          const transform = anim
             ? [{ translateX: anim.x }, { translateY: anim.y }]
-            : [
-                { translateX: seg.x * CELULA },
-                { translateY: seg.y * CELULA },
-              ];
+            : [{ translateX: seg.x * CELULA }, { translateY: seg.y * CELULA }];
 
           return (
             <Animated.View
-              key={`seg-${idx}-${seg.x}-${seg.y}`}
+              key={`c-${idx}-${seg.x}-${seg.y}`}
               style={[
                 styles.segment,
                 { backgroundColor: corCobra },
-                { transform: transformStyle },
+                { transform },
               ]}
             />
           );
         })}
 
-        {/* MAÇÃ */}
+        {/* Cobra Inimiga — modo difícil */}
+        {modoSelecionado === "DIFICIL" &&
+          cobraInimiga.map((seg, i) => (
+            <View
+              key={`enemy-${i}`}
+              style={{
+                position: "absolute",
+                width: CELULA - 4,
+                height: CELULA - 4,
+                left: seg.x * CELULA + 2,
+                top: seg.y * CELULA + 2,
+                backgroundColor: "#d32f2f",
+                borderRadius: 4,
+              }}
+            />
+          ))}
+
+        {/* Comida */}
         <Animated.View
           style={{
             position: "absolute",
@@ -456,79 +609,67 @@ export default function Game() {
             top: comida.y * CELULA + 2,
             width: CELULA - 4,
             height: CELULA - 4,
-            borderRadius: 6,
-            backgroundColor: "#d32f2f",
+            backgroundColor: "#e53935",
+            borderRadius: 5,
             transform: [{ scale: eatAnim }],
           }}
         />
-
-        {/* COBRA INIMIGA — MODO DIFÍCIL */}
-        {modoSelecionado === "DIFICIL" &&
-          cobraInimiga.map((seg, idx) => (
-            <View
-              key={`enemy-${idx}-${seg.x}-${seg.y}`}
-              style={{
-                position: "absolute",
-                width: CELULA - 4,
-                height: CELULA - 4,
-                left: seg.x * CELULA + 2,
-                top: seg.y * CELULA + 2,
-                borderRadius: 6,
-                backgroundColor: "#b71c1c",
-                borderColor: "#7f0000",
-                borderWidth: 1,
-              }}
-            />
-          ))}
       </View>
 
-      <Text style={styles.playHint}>
-        Deslize no ecrã para mudar a direção
-      </Text>
+      <Text style={styles.playHint}>Deslize para mover</Text>
     </View>
   );
+
+  // ------------------ FIM PARTE 3 ------------------
+  // =====================================================
+  //                STYLESHEET FINAL
+  // =====================================================
 }
 
-// ---------------- ESTILOS ----------------
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#222",
+    backgroundColor: "#111",
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 10,
   },
 
+  // Títulos
   title: {
-    fontSize: 28,
-    color: "#fff",
-    marginBottom: 14,
+    fontSize: 32,
     fontWeight: "700",
-    textAlign: "center",
+    color: "#fff",
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: "#ccc",
+    marginBottom: 30,
   },
 
+  // Botões
   playBtn: {
     backgroundColor: "#4caf50",
-    paddingHorizontal: 36,
+    paddingHorizontal: 30,
     paddingVertical: 12,
     borderRadius: 10,
-    marginBottom: 14,
-    marginTop: 4,
+    marginTop: 10,
   },
-
   playText: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "700",
   },
 
+  // Instruções / caixas
   instructionsBox: {
-    marginTop: 18,
-    backgroundColor: "#333",
+    marginTop: 20,
+    backgroundColor: "#222",
     padding: 14,
     borderRadius: 10,
-    width: "82%",
+    width: "80%",
   },
-
   instructionsTitle: {
     color: "#fff",
     fontSize: 18,
@@ -536,24 +677,23 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: "center",
   },
-
   instructionsText: {
     color: "#ccc",
     fontSize: 14,
     marginBottom: 4,
-    textAlign: "center",
   },
 
+  // Contagem
   countdown: {
     color: "#fff",
-    fontSize: 72,
+    fontSize: 70,
     fontWeight: "700",
   },
 
+  // Jogo
   scoreTop: {
     color: "#fff",
     marginBottom: 12,
-    fontSize: 16,
   },
 
   board: {
@@ -570,46 +710,25 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: CELULA - 4,
     height: CELULA - 4,
-    borderRadius: 6,
+    borderRadius: 5,
   },
 
   playHint: {
-    color: "#ddd",
-    marginTop: 12,
+    color: "#bbb",
+    marginTop: 10,
   },
 
+  // Game Over
   gameOverTitle: {
     fontSize: 36,
     color: "#ff5252",
-    marginBottom: 10,
-    textAlign: "center",
+    marginBottom: 12,
+    fontWeight: "700",
   },
-
   score: {
     fontSize: 20,
     color: "#fff",
     marginBottom: 6,
-    textAlign: "center",
-  },
-
-  /* BOTÕES DOS MODOS */
-  modeBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginHorizontal: 6,
-    borderRadius: 8,
-    backgroundColor: "#333",
-    borderWidth: 1,
-    borderColor: "#444",
-  },
-
-  modeBtnSelected: {
-    backgroundColor: "#4caf50",
-    borderColor: "#4caf50",
-  },
-
-  modeBtnText: {
-    color: "#fff",
-    fontWeight: "700",
   },
 });
+// ------------------ FIM PARTE 4 ------------------
