@@ -388,34 +388,32 @@ export default function Game() {
   // ------------------ RENDER ------------------
 
   // =====================================================
-  //               TELA DE BOAS-VINDAS
-  // =====================================================
-  if (showWelcome) {
-    return (
-      <View style={styles.root}>
-        <Animated.View
-          style={{
-            transform: [{ scale: welcomePulse }],
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Text style={styles.title}>Jogo Cobra</Text>
-          <Text style={styles.subtitle}>Bem-vindo!</Text>
-        </Animated.View>
+//               TELA DE BOAS-VINDAS
+// =====================================================
+if (showWelcome) {
+  return (
+    <View style={styles.root}>
+      <Text style={styles.title}>JOGO DA COBRA</Text>
 
-        <TouchableOpacity
-          style={styles.playBtn}
-          onPress={() => {
-            setShowWelcome(false);
-            setShowPlayScreen(true);
-          }}
-        >
-          <Text style={styles.playText}>Continuar</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+      <Text style={styles.welcomeText}>
+        Bem-vindo ao clássico Snake!
+        {"\n"}Desvia-te das paredes e do corpo,
+        {"\n"}apanha comida para crescer!
+      </Text>
+
+      <TouchableOpacity
+        style={styles.playBtn}
+        onPress={() => {
+          setShowWelcome(false);
+          setShowPlayScreen(true);
+        }}
+      >
+        <Text style={styles.playText}>Começar</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 
   // =====================================================
   //               TELA DE PLAY (SIMPLIFICADA)
@@ -730,5 +728,15 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginBottom: 6,
   },
+
+  //Tela de boas-vindas
+  welcomeText: {
+  color: "#ccc",
+  fontSize: 16,
+  textAlign: "center",
+  marginBottom: 20,
+  lineHeight: 24,
+},
+
 });
 // ------------------ FIM PARTE 4 ------------------
