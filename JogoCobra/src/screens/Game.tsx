@@ -2,7 +2,7 @@
 import React, { useRef, useState } from "react";
 import { View, Text, StyleSheet, Animated, PanResponder } from "react-native";
 import { Modo } from "../types/types";
-import WelcomeScreen from "../screens/WelcomeScreen"; 
+import WelcomeScreen from "../screens/WelcomeScreen";
 import ModeSelectScreen from "../screens/ModeSelectScreen";
 import CountdownScreen from "../screens/CountdownScreen";
 import GameOverScreen from "../screens/GameOverScreen";
@@ -21,10 +21,14 @@ export default function Game() {
   const [contador, setContador] = useState<number | null>(null);
   const [gameOver, setGameOver] = useState(false);
 
+  // *** MUDANÇA 1: declarar jogando ANTES dos hooks que usam onGameOver/terminarJogo
+  const [jogando, setJogando] = useState(false);
+
   // Refs e animações
   const latestDirRef = useRef(DIRECOES.DIREITA);
   const eatAnim = useRef(new Animated.Value(1)).current;
   const animSegments = useRef<any[]>([]);
+  const enemyAnimSegments = useRef<any[]>([]);   // <-- ÚNICA ADIÇÃO
 
   // Hook principal da cobra
   const {
@@ -51,8 +55,9 @@ export default function Game() {
     eatAnim,
     animSegments,
     modoSelecionado,
+    // *** MUDANÇA 2: parar o loop ANTES de ativar o GameOver
     onGameOver: () => {
-      setJogando(false);   // para o movimento
+      setJogando(false);   // para o movimento / loop
       setGameOver(true);   // mostra tela de game over
     },
   });
@@ -61,15 +66,15 @@ export default function Game() {
   const { cobraInimiga, setCobraInimiga, moverCobraInimiga } = useEnemyMovement({
     modoSelecionado,
     cobra,
+    enemyAnimSegments,    // <-- necessário para animação suave
+    // *** MUDANÇA 2 (aplicada também aqui): parar o loop ANTES de ativar o GameOver
     terminarJogo: () => {
-    setJogando(false);     // ← MUITO IMPORTANTE!
-    setGameOver(true);     
+      setJogando(false);
+      setGameOver(true);
     },
-
   });
 
   // Loop do jogo
-  const [jogando, setJogando] = useState(false);
   useGameLoop(jogando, velocidade, () => {
     step();
     moverCobraInimiga();
@@ -77,7 +82,7 @@ export default function Game() {
 
   // Contagem inicial
   function iniciarContagem() {
-    setJogando (false);
+    setJogando(false);
     setContador(3);
     let c = 3;
 
@@ -97,6 +102,7 @@ export default function Game() {
   function reiniciar() {
     resetCobra();
     latestDirRef.current = DIRECOES.DIREITA;
+    setJogando(false);
     setCobraInimiga([{ x: 8, y: 8 }]);
     setPontos(0);
     setGameOver(false);
@@ -111,7 +117,6 @@ export default function Game() {
 
       onPanResponderRelease: (_evt, g) => {
         const { dx, dy } = g;
-
         const thresh = 14;
 
         const absX = Math.abs(dx);
@@ -129,7 +134,6 @@ export default function Game() {
       },
     })
   ).current;
-
 
   // -----------------------------
   // RENDER FLOW
@@ -150,11 +154,11 @@ export default function Game() {
       <ModeSelectScreen
         onSelect={(modo: Modo) => {
           setModoSelecionado(modo);
-
-          setVelocidade(300);        
+          resetCobra();
+          setVelocidade(300);
           latestDirRef.current = DIRECOES.DIREITA;
           setCobraInimiga([{ x: 8, y: 8 }]);
-
+          enemyAnimSegments.current = []; // <-- garante reset
           setShowModeSelection(false);
           iniciarContagem();
         }}
@@ -174,7 +178,6 @@ export default function Game() {
         onRestart={reiniciar}
         onMenu={() => {
           setShowModeSelection(true);
-          setModoSelecionado(null);
         }}
       />
     );
@@ -183,8 +186,8 @@ export default function Game() {
   // Jogo ativo
   return (
     <View style={styles.root}>
-      <Text style={styles.scorePixel}>
-        {modoSelecionado} | {pontos} pts | REC {melhor}
+      <Text style={styles.score}>
+        Modo: {modoSelecionado} | Pontos: {pontos} | Melhor: {melhor}
       </Text>
 
       <GameBoard
@@ -192,16 +195,13 @@ export default function Game() {
         cobraInimiga={cobraInimiga}
         comida={comida}
         animSegments={animSegments.current}
+        enemyAnimSegments={enemyAnimSegments.current}   // <-- ÚNICA ADIÇÃO AQUI
         eatAnim={eatAnim}
         corCobra={corCobra}
         modoSelecionado={modoSelecionado}
         panHandlers={panResponder.panHandlers}
         onRequestDirecao={requestDirecao}
       />
-
-      <Text style={styles.score}>
-        Deslize para mover a cobra
-      </Text>
     </View>
   );
 }
