@@ -6,26 +6,18 @@ import { Posicao } from "../types/types";
 
 interface Props {
   segment: Posicao;
-  animation?: any;
-  color: string;
+  animation?: Animated.ValueXY | any;
+  color?: string;
 }
 
-export default function SnakeSegment({ segment, animation, color }: Props) {
-  const style = animation
-    ? {
-        transform: [
-          { translateX: animation.x },
-          { translateY: animation.y },
-        ],
-      }
-    : {
-        transform: [
-          { translateX: segment.x * CELULA },
-          { translateY: segment.y * CELULA },
-        ],
-      };
+export default function SnakeSegment({ segment, animation, color = "#43a047" }: Props) {
+  // Se animation for um Animated.ValueXY, usamos animation.x / animation.y
+  const transformStyle =
+    animation && typeof animation.setValue !== "undefined"
+      ? [{ translateX: animation.x }, { translateY: animation.y }]
+      : [{ translateX: segment.x * CELULA }, { translateY: segment.y * CELULA }];
 
-  return <Animated.View style={[styles.segment, { backgroundColor: color }, style]} />;
+  return <Animated.View style={[styles.segment, { backgroundColor: color }, { transform: transformStyle }]} />;
 }
 
 const styles = StyleSheet.create({

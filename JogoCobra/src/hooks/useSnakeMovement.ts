@@ -1,8 +1,6 @@
 // src/hooks/useSnakeMovement.ts
 import { useState, useRef } from "react";
 import { Animated } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import {
   DIRECOES,
   gerarComida,
@@ -10,151 +8,178 @@ import {
   CELULA,
   igual,
 } from "../utils/constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Posicao } from "../types/types";
 
 const MOVE_INTERVAL_MS = 300;
 const STORAGE_KEY_MELHOR = "@JogoCobra_MelhorPontuacao";
-
-interface Params {
-  latestDirRef: any;
-  eatAnim: Animated.Value;
-  animSegments: any;
-  modoSelecionado: string | null;
-}
 
 export default function useSnakeMovement({
   latestDirRef,
   eatAnim,
   animSegments,
   modoSelecionado,
-}: Params) {
+  onGameOver,
+}: {
+  latestDirRef: React.MutableRefObject<Posicao>;
+  eatAnim: Animated.Value;
+  animSegments: React.MutableRefObject<Animated.ValueXY[]>;
+  modoSelecionado: "FACIL" | "MEDIO" | "DIFICIL" | null;
+  onGameOver?: () => void;
+}) {
   const startX = Math.floor(GRID_SIZE / 2);
   const startY = Math.floor(GRID_SIZE / 2);
 
   const [cobra, setCobra] = useState<Posicao[]>([{ x: startX, y: startY }]);
-  const [direcao, setDirecao] = useState(DIRECOES.DIREITA);
-  const [comida, setComida] = useState<Posicao>(() =>
-    gerarComida([{ x: startX, y: startY }])
-  );
-  const [pontos, setPontos] = useState(0);
-  const [melhor, setMelhor] = useState(0);
-  const [velocidade, setVelocidade] = useState(MOVE_INTERVAL_MS);
-  const [corCobra, setCorCobra] = useState("#43a047");
+  const [direcao, setDirecao] = useState<Posicao>(DIRECOES.DIREITA);
+  const [comida, setComida] = useState<Posicao>(() => gerarComida([{ x: startX, y: startY }]));
+  const [pontos, setPontos] = useState<number>(0);
+  const [melhor, setMelhor] = useState<number>(0);
+  const [velocidade, setVelocidade] = useState<number>(MOVE_INTERVAL_MS);
+  const [corCobra, setCorCobra] = useState<string>("#43a047");
 
-  const comidaRef = useRef(comida);
+  const comidaRef = useRef<Posicao>(comida);
   comidaRef.current = comida;
 
-  // ----------------------------------------------------
-  // RESET
+  // Garantir animSegments inicial
+  if (!animSegments.current || animSegments.current.length === 0) {
+    animSegments.current = [new Animated.ValueXY({ x: startX * CELULA, y: startY * CELULA })];
+  }
+
   function resetCobra() {
-    setCobra([{ x: startX, y: startY }]);
+    // Reset direção
     setDirecao(DIRECOES.DIREITA);
     latestDirRef.current = DIRECOES.DIREITA;
 
-    const novaComida = gerarComida([{ x: startX, y: startY }]);
+    // Reset posição inicial
+    const init = { x: startX, y: startY };
+    setCobra([init]);
+    
+    // Reset comida
+    const novaComida = gerarComida([init]);
     setComida(novaComida);
     comidaRef.current = novaComida;
 
+    // Reset pontos e velocidade
     setPontos(0);
     setVelocidade(MOVE_INTERVAL_MS);
 
-    animSegments.current = [
-      new Animated.ValueXY({ x: startX * CELULA, y: startY * CELULA }),
-    ];
+    // Reset animSegments: apenas a cabeça
+    animSegments.current = [new Animated.ValueXY({ x: startX * CELULA, y: startY * CELULA })];
   }
 
-  // ----------------------------------------------------
-  // STEP PRINCIPAL
   function step() {
     setCobra((prev) => {
-      const head = prev[0];
-      const dir = latestDirRef.current;
+      if (!prev || prev.length === 0) return prev;
 
-      const novaHead = { x: head.x + dir.x, y: head.y + dir.y };
+      const head = prev[0];
+      const dir = latestDirRef.current || direcao;
+      const novaHead: Posicao = { x: head.x + dir.x, y: head.y + dir.y };
 
       // colisão com paredes
-      if (
-        novaHead.x < 0 ||
-        novaHead.x >= GRID_SIZE ||
-        novaHead.y < 0 ||
-        novaHead.y >= GRID_SIZE
-      ) {
+      if (novaHead.x < 0 || novaHead.x >= GRID_SIZE || novaHead.y < 0 || novaHead.y >= GRID_SIZE) {
+        onGameOver?.();
         return prev;
       }
 
       // colisão com o próprio corpo
       if (prev.some((seg) => igual(seg, novaHead))) {
+        onGameOver?.();
         return prev;
       }
 
       let novaCobra = [novaHead, ...prev];
 
-      // COME A COMIDA
+      // comer comida?
       if (igual(novaHead, comidaRef.current)) {
-        const novaPont = pontos + 1;
-        setPontos(novaPont);
+        const novoPontos = pontos + 1;
+        setPontos(novoPontos);
 
-        if (novaPont > melhor) {
-          setMelhor(novaPont);
-          AsyncStorage.setItem(STORAGE_KEY_MELHOR, String(novaPont));
+        if (novoPontos > melhor) {
+          setMelhor(novoPontos);
+          AsyncStorage.setItem(STORAGE_KEY_MELHOR, String(novoPontos)).catch(() => {});
         }
 
-        // velocidade aumenta APENAS no médio
-        if (modoSelecionado === "MEDIO") {
-          setVelocidade((v) => Math.max(80, v - 15));
+        // -------------------------------
+        //      MODO MÉDIO – acelerar
+        // -------------------------------
+         if (modoSelecionado === "MEDIO") {
+            setVelocidade((velAtual) => {
+             const novaVel = velAtual - 25; // aumenta a velocidade (tempo menor)
+             return Math.max(90, novaVel);  // nunca abaixo de 90 ms
+           });
+          }
+
+        
+        // gerar nova comida sem colidir com a cobra
+        const nextFood = gerarComida(novaCobra);
+        setComida(nextFood);
+        comidaRef.current = nextFood;
+
+        // animação de comer
+        try {
+          eatAnim.setValue(1);
+          Animated.sequence([
+            Animated.timing(eatAnim, { toValue: 1.35, duration: 90, useNativeDriver: true }),
+            Animated.timing(eatAnim, { toValue: 1, duration: 140, useNativeDriver: true }),
+          ]).start();
+        } catch (err) {
+          // ignore se eatAnim inválido
         }
-
-        const novaComida = gerarComida(novaCobra);
-        setComida(novaComida);
-        comidaRef.current = novaComida;
-
-        Animated.sequence([
-          Animated.timing(eatAnim, {
-            toValue: 1.3,
-            duration: 80,
-            useNativeDriver: true,
-          }),
-          Animated.timing(eatAnim, {
-            toValue: 1,
-            duration: 120,
-            useNativeDriver: true,
-          }),
-        ]).start();
       } else {
+        // não comeu -> remove cauda
         novaCobra.pop();
       }
 
-      // animação suave
+      // garantir Animated.ValueXY para cada segmento
       while (animSegments.current.length < novaCobra.length) {
-        const s = novaCobra[animSegments.current.length];
-        animSegments.current.push(
-          new Animated.ValueXY({ x: s.x * CELULA, y: s.y * CELULA })
-        );
+        // inicializar a posição do novo segmento na posição do último segmento anterior (para evitar salto)
+        const last = novaCobra[animSegments.current.length] || novaCobra[novaCobra.length - 1];
+        animSegments.current.push(new Animated.ValueXY({ x: last.x * CELULA, y: last.y * CELULA }));
+      }
+      // se houver mais animSegments do que segmentos, cortar
+      if (animSegments.current.length > novaCobra.length) {
+        animSegments.current.splice(novaCobra.length);
       }
 
+      // animar cada segmento para a nova posição
       novaCobra.forEach((seg, idx) => {
-        Animated.timing(animSegments.current[idx], {
-          toValue: { x: seg.x * CELULA, y: seg.y * CELULA },
-          duration: velocidade,
-          useNativeDriver: false,
-        }).start();
+        const anim = animSegments.current[idx];
+        if (anim && typeof anim.setValue !== "undefined") {
+          Animated.timing(anim, {
+            toValue: { x: seg.x * CELULA, y: seg.y * CELULA },
+            duration: velocidade,
+            useNativeDriver: false,
+          }).start();
+        }
       });
 
       return novaCobra;
     });
   }
 
-  // ----------------------------------------------------
-  // DIREÇÃO
-  function requestDirecao(nova: Posicao) {
-    const atual = latestDirRef.current;
+  // Solicitar mudança de direção
+ function requestDirecao(nova: Posicao, instantaneo = false) {
+  const atual = latestDirRef.current;
 
-    if (nova.x === -atual.x && nova.y === -atual.y) return;
+  if (nova.x === -atual.x && nova.y === -atual.y) return;
 
-    latestDirRef.current = nova;
-    setDirecao(nova);
+  latestDirRef.current = nova;
+  setDirecao(nova);
+
+  // ⬇️⬇️ Movimento imediato da cabeça (melhora o swipe)
+  if (instantaneo && animSegments.current[0]) {
+    const head = cobra[0];
+    const novaHead = { x: head.x + nova.x, y: head.y + nova.y };
+
+    animSegments.current[0].setValue({
+      x: novaHead.x * CELULA,
+      y: novaHead.y * CELULA,
+    });
   }
+}
 
+  // Retornar estado e funções
   return {
     cobra,
     direcao,
@@ -163,15 +188,12 @@ export default function useSnakeMovement({
     melhor,
     velocidade,
     corCobra,
-
-    setDirecao,
     setCobra,
     setComida,
     setPontos,
     setVelocidade,
     setMelhor,
     setCorCobra,
-
     requestDirecao,
     step,
     resetCobra,

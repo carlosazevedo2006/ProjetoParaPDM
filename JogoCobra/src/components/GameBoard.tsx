@@ -1,42 +1,36 @@
 // src/components/GameBoard.tsx
 import React from "react";
-import { View, StyleSheet } from "react-native";
-
+import { View, Animated, StyleSheet } from "react-native";
 import SnakeSegment from "./SnakeSegment";
 import EnemySnakeSegment from "./EnemySnakeSegment";
 import Food from "./Food";
-
 import { GRID_SIZE, CELULA } from "../utils/constants";
 import { Posicao } from "../types/types";
 
 interface GameBoardProps {
   cobra: Posicao[];
-  cobraInimiga: Posicao[];
+  cobraInimiga?: Posicao[];
   comida: Posicao;
-
-  animSegments: any[];
-  eatAnim: any;
-
+  animSegments: Animated.ValueXY[];
+  eatAnim: Animated.Value;
   corCobra: string;
-  modoSelecionado: string | null;
-
-  onRequestDirecao?: (dir: Posicao) => void;
+  modoSelecionado?: string | null;
   panHandlers?: any;
 }
 
 export default function GameBoard({
   cobra,
-  cobraInimiga,
+  cobraInimiga = [],
   comida,
-  animSegments,
+  animSegments = [],
   eatAnim,
   corCobra,
-  modoSelecionado,
+  modoSelecionado = null,
   panHandlers = {},
 }: GameBoardProps) {
   return (
-    <View style={styles.board} {...panHandlers}>
-      {/* GRELHA */}
+    <View style={styles.board} {...(panHandlers || {})}>
+      {/* Grid */}
       {Array.from({ length: GRID_SIZE }).map((_, row) =>
         Array.from({ length: GRID_SIZE }).map((_, col) => (
           <View
@@ -55,22 +49,55 @@ export default function GameBoard({
         ))
       )}
 
-      {/* COBRA DO JOGADOR */}
-      {cobra.map((seg, idx) => (
-        <SnakeSegment
-          key={`snake-${idx}`}
-          segment={seg}
-          animation={animSegments[idx]}
-          color={corCobra}
-        />
-      ))}
+      {/* Cobra do jogador — usa animSegments para suavidade */}
+      {cobra.map((seg, idx) => {
+        const anim = animSegments && animSegments[idx];
+        // usar Animated.View com transform via getTranslateTransform quando anim existe
+        if (anim && typeof anim.getTranslateTransform === "function") {
+          return (
+            <Animated.View
+              key={`seg-${idx}-${seg.x}-${seg.y}`}
+              style={[
+                styles.segment,
+                { backgroundColor: corCobra },
+                { transform: anim.getTranslateTransform() },
+              ]}
+            />
+          );
+        } else {
+          // fallback estático
+          return (
+            <Animated.View
+              key={`seg-static-${idx}-${seg.x}-${seg.y}`}
+              style={[
+                styles.segment,
+                { backgroundColor: corCobra },
+                { left: seg.x * CELULA + 2, top: seg.y * CELULA + 2 },
+              ]}
+            />
+          );
+        }
+      })}
 
-      {/* COBRA INIMIGA — apenas modo difícil */}
+      {/* Cobra inimiga (modo difícil) */}
       {modoSelecionado === "DIFICIL" &&
-        cobraInimiga.map((seg, idx) => <EnemySnakeSegment key={`enemy-${idx}`} segment={seg} />)}
+        (cobraInimiga || []).map((seg, idx) => (
+          <EnemySnakeSegment key={`enemy-${idx}`} segment={seg} />
+        ))}
 
-      {/* COMIDA */}
-      <Food comida={comida} eatAnim={eatAnim} />
+      {/* Comida */}
+      <Animated.View
+        style={{
+          position: "absolute",
+          left: comida.x * CELULA + 2,
+          top: comida.y * CELULA + 2,
+          width: CELULA - 4,
+          height: CELULA - 4,
+          borderRadius: 6,
+          backgroundColor: "#e53935",
+          transform: [{ scale: eatAnim || 1 }],
+        }}
+      />
     </View>
   );
 }
@@ -85,4 +112,11 @@ const styles = StyleSheet.create({
     position: "relative",
     overflow: "hidden",
   },
+  segment: {
+    position: "absolute",
+    width: CELULA - 4,
+    height: CELULA - 4,
+    borderRadius: 6,
+  },
 });
+    

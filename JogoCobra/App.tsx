@@ -8,36 +8,14 @@ import Game from "./src/screens/Game";
 export default function App() {
   // modo é null --> mostra menu
   // modo é "FACIL" | "MEDIO" | "DIFICIL" --> entra no jogo
-  const [modo, setModo] = useState<"FACIL" | "MEDIO" | "DIFICIL" | null>(null);
+  
 
   // Se o modo ainda não foi escolhido, mostrar menu
-  if (modo === null) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.titulo}>JOGO DA COBRA</Text>
-
-        {/* Botão Modo Fácil */}
-        <TouchableOpacity style={styles.botao} onPress={() => setModo("FACIL")}>
-          <Text style={styles.botaoTexto}>Modo Fácil</Text>
-        </TouchableOpacity>
-
-        {/* Botão Modo Médio */}
-        <TouchableOpacity style={styles.botao} onPress={() => setModo("MEDIO")}>
-          <Text style={styles.botaoTexto}>Modo Médio</Text>
-        </TouchableOpacity>
-
-        {/* Botão Modo Difícil */}
-        <TouchableOpacity style={styles.botao} onPress={() => setModo("DIFICIL")}>
-          <Text style={styles.botaoTexto}>Modo Difícil</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  }
-
+  
   // Quando o modo está selecionado, iniciar o jogo
   return (
     <SafeAreaView style={styles.container}>
-      <Game modo={modo} voltarMenu={() => setModo(null)} />
+      <Game/>
     </SafeAreaView>
   );
 }

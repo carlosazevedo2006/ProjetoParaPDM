@@ -1,28 +1,30 @@
 // src/hooks/useGameLoop.ts
 import { useEffect, useRef } from "react";
 
-export default function useGameLoop(isRunning: boolean, interval: number, stepFn: () => void) {
-  const lastTime = useRef(0);
-  const rafRef = useRef<number | null>(null);
+export default function useGameLoop(jogando: boolean, velocidade: number, callback: () => void) {
+  const last = useRef(0);
+  const raf = useRef<number | null>(null);
 
-  function loop(timestamp: number) {
-    if (!lastTime.current) lastTime.current = timestamp;
+  function loop(t: number) {
+    if (!last.current) last.current = t;
 
-    const delta = timestamp - lastTime.current;
+    const delta = t - last.current;
 
-    if (isRunning && delta >= interval) {
-      stepFn();
-      lastTime.current = timestamp;
+    if (jogando && delta >= velocidade) {
+      callback();
+      last.current = t;
     }
 
-    rafRef.current = requestAnimationFrame(loop);
+    raf.current = requestAnimationFrame(loop);
   }
 
   useEffect(() => {
-    rafRef.current = requestAnimationFrame(loop);
+    raf.current = requestAnimationFrame(loop);
 
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (raf.current) {
+        cancelAnimationFrame(raf.current);
+      }
     };
-  }, [isRunning, interval]);
+}, [jogando, velocidade, callback]);
 }
