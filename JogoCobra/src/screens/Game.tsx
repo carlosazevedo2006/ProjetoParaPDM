@@ -7,6 +7,7 @@ import WelcomeScreen from "../screens/WelcomeScreen";
 import ModeSelectScreen from "../screens/ModeSelectScreen";
 import CountdownScreen from "../screens/CountdownScreen";
 import GameOverScreen from "../screens/GameOverScreen";
+import SettingsScreen from "../screens/SettingsScreen";  // <-- NOVO
 
 import GameBoard from "../components/GameBoard";
 import useSnakeMovement from "../hooks/useSnakeMovement";
@@ -15,8 +16,8 @@ import useGameLoop from "../hooks/useGameLoop";
 import { DIRECOES } from "../utils/constants";
 
 export default function Game() {
-  // fluxo de telas
   const [showWelcome, setShowWelcome] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);  // <-- NOVO
   const [showModeSelection, setShowModeSelection] = useState(false);
 
   const [modoSelecionado, setModoSelecionado] = useState<Modo | null>(null);
@@ -24,13 +25,11 @@ export default function Game() {
   const [gameOver, setGameOver] = useState(false);
   const [jogando, setJogando] = useState(false);
 
-  // refs
   const latestDirRef = useRef(DIRECOES.DIREITA);
   const animSegments = useRef<any[]>([]);
   const enemyAnimSegments = useRef<any[]>([]);
   const eatAnim = useRef(new Animated.Value(1)).current;
 
-  // === COBRA DO JOGADOR ===
   const {
     cobra,
     comida,
@@ -38,11 +37,10 @@ export default function Game() {
     melhor,
     velocidade,
     corCobra,
-    setPontos,
-    
     requestDirecao,
     step,
     resetCobra,
+    setPontos,
   } = useSnakeMovement({
     latestDirRef,
     eatAnim,
@@ -54,7 +52,6 @@ export default function Game() {
     },
   });
 
-  // === COBRA INIMIGA (modo difícil) ===
   const {
     cobraInimiga,
     setCobraInimiga,
@@ -69,18 +66,16 @@ export default function Game() {
     },
   });
 
-  // loop do jogo
   useGameLoop(jogando, velocidade, () => {
     step();
     moverCobraInimiga();
   });
 
-  // === CONTAGEM ANTES DO JOGO ===
   function iniciarContagem() {
     setJogando(false);
     setContador(3);
-
     let c = 3;
+
     const id = setInterval(() => {
       c--;
       setContador(c);
@@ -93,7 +88,6 @@ export default function Game() {
     }, 1000);
   }
 
-  // === REINICIAR JOGO ===
   function reiniciar() {
     resetCobra();
     latestDirRef.current = DIRECOES.DIREITA;
@@ -104,43 +98,42 @@ export default function Game() {
     setPontos(0);
     setGameOver(false);
     iniciarContagem();
-
   }
-  
 
-  // === SWIPE (gestos) ===
+  // --------------------------
+  // SWIPE
+  // --------------------------
   const panResponder = useRef(
-  PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (_evt, g) => {
+        const { dx, dy } = g;
+        const absX = Math.abs(dx);
+        const absY = Math.abs(dy);
+        if (absX < 10 && absY < 10) return;
+        if (absX > absY) {
+          requestDirecao(dx > 0 ? DIRECOES.DIREITA : DIRECOES.ESQUERDA);
+        } else {
+          requestDirecao(dy > 0 ? DIRECOES.BAIXO : DIRECOES.CIMA);
+        }
+      },
+      onPanResponderRelease: () => {},
+    })
+  ).current;
 
-    onPanResponderMove: (_evt, g) => {
-      const { dx, dy } = g;
+  // --------------------------
+  // RENDER SCREENS
+  // --------------------------
 
-      const absX = Math.abs(dx);
-      const absY = Math.abs(dy);
-
-      // precisa de mínimo movimento
-      if (absX < 10 && absY < 10) return;
-
-      // horizontal
-      if (absX > absY) {
-        requestDirecao(dx > 0 ? DIRECOES.DIREITA : DIRECOES.ESQUERDA);
-      } 
-      // vertical
-      else {
-        requestDirecao(dy > 0 ? DIRECOES.BAIXO : DIRECOES.CIMA);
-      }
-    },
-
-    onPanResponderRelease: () => {},
-  })
-).current;
-  
-
-  // ============================
-  //         RENDER FLOW
-  // ============================
+  if (showSettings) {
+    return (
+      <SettingsScreen
+        onClose={() => setShowSettings(false)}
+        onApply={() => setShowSettings(false)}
+      />
+    );
+  }
 
   if (showWelcome) {
     return (
@@ -149,6 +142,7 @@ export default function Game() {
           setShowWelcome(false);
           setShowModeSelection(true);
         }}
+        onSettings={() => setShowSettings(true)}   // <-- NOVO
       />
     );
   }
@@ -158,12 +152,9 @@ export default function Game() {
       <ModeSelectScreen
         onSelect={(modo: Modo) => {
           setModoSelecionado(modo);
-
-          // reset tudo ao entrar no modo
           resetCobra();
           setCobraInimiga([{ x: 8, y: 8 }]);
           enemyAnimSegments.current = [];
-
           setShowModeSelection(false);
           iniciarContagem();
         }}
@@ -171,9 +162,7 @@ export default function Game() {
     );
   }
 
-  if (contador !== null) {
-    return <CountdownScreen value={contador} />;
-  }
+  if (contador !== null) return <CountdownScreen value={contador} />;
 
   if (gameOver) {
     return (
@@ -190,7 +179,7 @@ export default function Game() {
     );
   }
 
-  // === JOGO A DECORRER ===
+  // jogo ativo
   return (
     <View style={styles.root}>
       <Text style={styles.score}>
@@ -221,13 +210,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   score: {
     fontSize: 16,
     color: "#00ff66",
     marginBottom: 16,
   },
-
   tip: {
     color: "#fff",
     fontSize: 12,

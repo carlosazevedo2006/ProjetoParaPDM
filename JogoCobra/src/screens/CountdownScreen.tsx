@@ -1,25 +1,25 @@
-// src/screens/CountdownScreen.tsx
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { useTheme } from "../context/ThemeContext";
 
-export default function CountdownScreen({ value }: { value: number }) {
+export default function CountdownScreen({ value }: any) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.root}>
-      <Text style={styles.count}>{value}</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.count, { color: colors.text }]}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  container: {
     flex: 1,
-    backgroundColor: "#000",
     justifyContent: "center",
     alignItems: "center",
   },
   count: {
-    fontSize: 120,
-    color: "#0f0",
-    fontWeight: "bold",
+    fontSize: 110,
+    fontWeight: "800",
   },
 });

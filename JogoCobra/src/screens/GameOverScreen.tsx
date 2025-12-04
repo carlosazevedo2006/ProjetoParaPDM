@@ -1,86 +1,87 @@
-// src/screens/GameOverScreen.tsx
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useTheme } from "../context/ThemeContext";
 
-export default function GameOverScreen({
-  pontos,
-  melhor,
-  onRestart,
-  onMenu,
-}: {
-  pontos: number;
-  melhor: number;
-  onRestart: () => void;
-  onMenu: () => void;
-}) {
+export default function GameOverScreen({ pontos, melhor, onRestart, onMenu }: any) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.root}>
-      <Text style={styles.title}>GAME OVER</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>GAME OVER</Text>
 
-      <View style={styles.box}>
-        <Text style={styles.info}>PONTOS: {pontos}</Text>
-        <Text style={styles.info}>RECORDE: {melhor}</Text>
+      <View style={styles.stats}>
+        <Text style={[styles.stat, { color: colors.text }]}>
+          Pontos: <Text style={styles.bold}>{pontos}</Text>
+        </Text>
+        <Text style={[styles.stat, { color: colors.text }]}>
+          Recorde: <Text style={styles.bold}>{melhor}</Text>
+        </Text>
       </View>
 
-      <TouchableOpacity style={styles.btn} onPress={onRestart}>
-        <Text style={styles.btnText}>REINICIAR</Text>
+      <TouchableOpacity
+        onPress={onRestart}
+        style={[styles.button, { backgroundColor: colors.card }]}
+      >
+        <Text style={[styles.buttonText, { color: colors.text }]}>Recomeçar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.btn} onPress={onMenu}>
-        <Text style={styles.btnText}>MENU</Text>
+      <TouchableOpacity
+        onPress={onMenu}
+        style={[styles.buttonSecondary, { borderColor: colors.text }]}
+      >
+        <Text style={[styles.buttonSecondaryText, { color: colors.text }]}>
+          Menu
+        </Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  container: {
     flex: 1,
-    backgroundColor: "#000",
-    alignItems: "center",
     justifyContent: "center",
-    padding: 20,
+    alignItems: "center",
+    gap: 20,
   },
 
   title: {
-    color: "#00ff66",
-    fontSize: 44,
-    fontFamily: "VT323_400Regular",
-    marginBottom: 40,
-    letterSpacing: 4,
+    fontSize: 42,
+    fontWeight: "800",
   },
 
-  box: {
-    borderWidth: 4,
-    borderColor: "#00ff66",
-    padding: 20,
-    width: 240,
-    alignItems: "center",
-    marginBottom: 40,
+  stats: {
+    gap: 6,
+    marginBottom: 20,
   },
 
-  info: {
-    color: "#00ff66",
-    fontSize: 28,
-    fontFamily: "VT323_400Regular",
-    marginVertical: 5,
-    letterSpacing: 2,
+  stat: {
+    fontSize: 20,
   },
 
-  btn: {
-    width: 200,
-    backgroundColor: "#00ff66",
+  bold: { fontWeight: "700" },
+
+  button: {
+    paddingVertical: 18,
+    paddingHorizontal: 80,
+    borderRadius: 14,
+    marginBottom: 4,
+  },
+
+  buttonText: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+
+  buttonSecondary: {
     paddingVertical: 14,
-    marginVertical: 10,
-    alignItems: "center",
-    borderWidth: 4,
-    borderColor: "#00ff66",
+    paddingHorizontal: 60,
+    borderRadius: 14,
+    borderWidth: 2,
   },
 
-  btnText: {
-    color: "#000",
-    fontSize: 22,
-    fontFamily: "VT323_400Regular",
-    letterSpacing: 2,
+  buttonSecondaryText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

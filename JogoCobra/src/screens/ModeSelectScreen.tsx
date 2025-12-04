@@ -1,74 +1,77 @@
-// src/screens/ModeSelectScreen.tsx
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Modo } from "../types/types";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useTheme } from "../context/ThemeContext";
 
-export default function ModeSelectScreen({ onSelect }: { onSelect: (m: Modo) => void }) {
+export default function ModeSelectScreen({ onSelect }: any) {
+  const { colors } = useTheme();
+
+  const modes = [
+    {
+      id: "FACIL",
+      title: "Fácil",
+      desc: "Movimentação normal. Sem cobra inimiga.",
+    },
+    {
+      id: "MEDIO",
+      title: "Médio",
+      desc: "Velocidade aumenta conforme come.",
+    },
+    {
+      id: "DIFICIL",
+      title: "Difícil",
+      desc: "Uma cobra inimiga tenta colidir contigo.",
+    },
+  ];
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>SELECIONAR MODO</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>
+        Selecionar Modo
+      </Text>
 
-      <View style={styles.menuBox}>
-        <TouchableOpacity style={styles.button} onPress={() => onSelect("FACIL")}>
-          <Text style={styles.buttonText}>FÁCIL</Text>
+      {modes.map((m) => (
+        <TouchableOpacity
+          key={m.id}
+          onPress={() => onSelect(m.id)}
+          style={[styles.card, { backgroundColor: colors.card }]}
+        >
+          <Text style={[styles.cardTitle, { color: colors.text }]}>
+            {m.title}
+          </Text>
+          <Text style={[styles.cardDesc, { color: colors.text }]}>
+            {m.desc}
+          </Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.button} onPress={() => onSelect("MEDIO")}>
-          <Text style={styles.buttonText}>MÉDIO</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={[styles.button, styles.hardButton]} onPress={() => onSelect("DIFICIL")}>
-          <Text style={styles.buttonText}>DIFÍCIL</Text>
-        </TouchableOpacity>
-      </View>
+      ))}
     </View>
   );
 }
 
-const PIXEL_BORDER = {
-  borderWidth: 4,
-  borderColor: "#00ff99",
-};
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#111",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
+    padding: 24,
+    gap: 18,
   },
 
   title: {
-    fontFamily: "VT323",
-    fontSize: 52,
-    color: "#00ff99",
-    marginBottom: 50,
-    textShadowColor: "#008f66",
-    textShadowRadius: 10,
+    marginTop: 40,
+    fontSize: 32,
+    fontWeight: "700",
   },
 
-  menuBox: {
-    width: "85%",
-    gap: 20,
+  card: {
+    padding: 22,
+    borderRadius: 16,
   },
 
-  button: {
-    backgroundColor: "#000",
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: "center",
-    ...PIXEL_BORDER,
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: "700",
   },
 
-  hardButton: {
-    borderColor: "#ff4d4d",
-  },
-
-  buttonText: {
-    fontFamily: "VT323",
-    fontSize: 30,
-    color: "#fff",
-    letterSpacing: 2,
+  cardDesc: {
+    marginTop: 6,
+    opacity: 0.75,
   },
 });

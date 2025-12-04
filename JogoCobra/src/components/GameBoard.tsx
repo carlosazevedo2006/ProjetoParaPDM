@@ -1,7 +1,7 @@
-// src/components/GameBoard.tsx
 import React from "react";
 import { View, StyleSheet, Animated } from "react-native";
 import { GRID_SIZE, CELULA } from "../utils/constants";
+import { useTheme } from "../context/ThemeContext";
 
 export default function GameBoard({
   cobra,
@@ -10,60 +10,60 @@ export default function GameBoard({
   animSegments,
   enemyAnimSegments,
   eatAnim,
-  corCobra,
   modoSelecionado,
   panHandlers,
 }: any) {
-  // tamanho do tabuleiro com base no GRID_SIZE atual (mantido fixo neste design)
+  const { colors, snakeColor } = useTheme();
+
   const size = GRID_SIZE * CELULA;
 
   return (
     <View style={[styles.wrapper, { width: size, height: size }]} {...panHandlers}>
-      <View style={styles.board}>
+      <View style={[styles.board, { backgroundColor: colors.board }]}>
 
-        {/* Comida (pop animação via eatAnim) */}
+        {/* Comida */}
         <Animated.View
-        style={[
-           styles.food,
+          style={[
+            styles.food,
             {
-           left: comida.x * CELULA,
-           top: comida.y * CELULA,
-             transform: [{ scale: eatAnim }],
-           },
-  ]}
-/>
+              backgroundColor: colors.food,
+              transform: [
+                { translateX: comida.x * CELULA },
+                { translateY: comida.y * CELULA },
+                { scale: eatAnim },
+              ],
+            },
+          ]}
+        />
 
-
-        {/* Cobra (segmentos animados) */}
+        {/* Cobra */}
         {cobra.map((seg: any, i: number) => {
           const anim = animSegments[i];
-          // se houver anim use transform animado, senão use posição direta
           if (anim) {
             return (
               <Animated.View
                 key={`s-${i}`}
                 style={[
                   styles.snake,
-                  { backgroundColor: corCobra },
+                  { backgroundColor: snakeColor },
                   { transform: [{ translateX: anim.x }, { translateY: anim.y }] },
                 ]}
               />
             );
           }
-
           return (
             <View
               key={`s-static-${i}`}
               style={[
                 styles.snake,
-                { backgroundColor: corCobra },
+                { backgroundColor: snakeColor },
                 { left: seg.x * CELULA, top: seg.y * CELULA },
               ]}
             />
           );
         })}
 
-        {/* Cobra inimiga (modo difícil) */}
+        {/* Cobra inimiga */}
         {modoSelecionado === "DIFICIL" &&
           cobraInimiga.map((seg: any, i: number) => {
             const anim = enemyAnimSegments?.[i];
@@ -71,12 +71,23 @@ export default function GameBoard({
               return (
                 <Animated.View
                   key={`e-${i}`}
-                  style={[styles.enemy, { transform: [{ translateX: anim.x }, { translateY: anim.y }] }]}
+                  style={[
+                    styles.enemy,
+                    { backgroundColor: colors.enemy },
+                    { transform: [{ translateX: anim.x }, { translateY: anim.y }] },
+                  ]}
                 />
               );
             }
             return (
-              <View key={`e-static-${i}`} style={[styles.enemy, { left: seg.x * CELULA, top: seg.y * CELULA }]} />
+              <View
+                key={`e-static-${i}`}
+                style={[
+                  styles.enemy,
+                  { backgroundColor: colors.enemy },
+                  { left: seg.x * CELULA, top: seg.y * CELULA },
+                ]}
+              />
             );
           })}
       </View>
@@ -92,33 +103,31 @@ const styles = StyleSheet.create({
   },
 
   board: {
+    position: "relative",
     width: "100%",
     height: "100%",
-    backgroundColor: "#000",
-    position: "relative",
     overflow: "hidden",
+    borderRadius: 12,
   },
 
   snake: {
     position: "absolute",
     width: CELULA,
     height: CELULA,
-    borderRadius: 2,
+    borderRadius: 4,
   },
 
   enemy: {
     position: "absolute",
     width: CELULA,
     height: CELULA,
-    borderRadius: 2,
-    backgroundColor: "#ff3b3b",
+    borderRadius: 4,
   },
 
   food: {
     position: "absolute",
     width: CELULA,
     height: CELULA,
-    backgroundColor: "#ffd400",
-    borderRadius: 2,
+    borderRadius: 6,
   },
 });
