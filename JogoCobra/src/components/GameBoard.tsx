@@ -23,17 +23,16 @@ export default function GameBoard({
 
         {/* Comida (pop animação via eatAnim) */}
         <Animated.View
-          style={[
-            styles.food,
+        style={[
+           styles.food,
             {
-              transform: [
-                { translateX: comida.x * CELULA },
-                { translateY: comida.y * CELULA },
-                { scale: eatAnim },
-              ],
-            },
-          ]}
-        />
+           left: comida.x * CELULA,
+           top: comida.y * CELULA,
+             transform: [{ scale: eatAnim }],
+           },
+  ]}
+/>
+
 
         {/* Cobra (segmentos animados) */}
         {cobra.map((seg: any, i: number) => {
