@@ -1,50 +1,81 @@
+// src/screens/WelcomeScreen.tsx
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, BackHandler, Platform } from "react-native";
 
 export default function WelcomeScreen({ onContinue }: any) {
   return (
-    <View style={styles.root}>
-      <Text style={styles.title}>JOGO DA COBRA</Text>
-      <Text style={styles.btnText}>Bem-vindo ao jogo clássico da cobra. Este projeto ainda se encontra em desenvolvimento, por isso haverá falhas.</Text>
-      <Text style={{ color: "#00ff66", fontSize: 20, marginBottom: 60, fontFamily: "VT323_400Regular" }}>
-        Toca em JOGAR para começares a tua aventura!
-      </Text>
-      <TouchableOpacity style={styles.btn} onPress={onContinue}>
-        <Text style={styles.btnText}>JOGAR</Text>
-      </TouchableOpacity>
+    <View style={styles.container}>
+
+      {/* TÍTULO */}
+      <Text style={styles.title}>SNAKE PIXEL</Text>
+
+      {/* BOTÕES */}
+      <View style={styles.menuBox}>
+        <TouchableOpacity style={styles.button} onPress={onContinue}>
+          <Text style={styles.buttonText}>JOGAR</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={() => console.log("Definições (por agora)")}>
+          <Text style={styles.buttonText}>DEFINIÇÕES</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, styles.exitButton]}
+          onPress={() => {
+            if (Platform.OS === "android") BackHandler.exitApp();
+          }}
+        >
+          <Text style={styles.buttonText}>SAIR</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
+const PIXEL_BORDER = {
+  borderWidth: 4,
+  borderColor: "#00ff99",
+};
+
 const styles = StyleSheet.create({
-  root: {
+  container: {
     flex: 1,
     backgroundColor: "#111",
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 20,
   },
-// MODIFICA APENAS ESTES ESTILOS:
 
-title: {
-  fontSize: 34,        // era 48
-  color: "#00ff66",
-  marginBottom: 20,    // era 30
-  fontFamily: "VT323_400Regular",
-  letterSpacing: 2,
-},
+  title: {
+    fontFamily: "VT323",
+    fontSize: 70,
+    color: "#00ff99",
+    marginBottom: 60,
+    textShadowColor: "#008f66",
+    textShadowRadius: 10,
+  },
 
-btnText: {
-  color: "#00ff66",
-  fontSize: 16,        // era 20
-  fontFamily: "VT323_400Regular",
-},
+  menuBox: {
+    width: "85%",
+    gap: 20,
+  },
 
+  button: {
+    backgroundColor: "#000",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    ...PIXEL_BORDER,
+  },
 
-btn: {
-  paddingVertical: 10,   // era 14
-  paddingHorizontal: 28, // era 40
-  backgroundColor: "#222",
-  borderWidth: 3,
-  borderColor: "#00ff66",
-},
+  exitButton: {
+    borderColor: "#ff4d4d",
+  },
+
+  buttonText: {
+    fontFamily: "VT323",
+    fontSize: 32,
+    color: "#fff",
+    letterSpacing: 2,
+  },
 });

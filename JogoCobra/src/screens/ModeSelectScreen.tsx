@@ -1,64 +1,74 @@
+// src/screens/ModeSelectScreen.tsx
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Modo } from "../types/types";
 
-export default function ModeSelectionScreen({
-  onSelect,
-}: {
-  onSelect: (modo: Modo) => void;
-}) {
+export default function ModeSelectScreen({ onSelect }: { onSelect: (m: Modo) => void }) {
   return (
-    <View style={styles.root}>
-      <Text style={styles.title}>Selecionar Modo</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>SELECIONAR MODO</Text>
 
-      <TouchableOpacity style={styles.btn} onPress={() => onSelect("FACIL")}>
-        <Text style={styles.btnText}>FÁCIL</Text>
-        <Text style={styles.btnText}>Neste modo, a velocidade da cobra é mais lenta, tornando o jogo mais acessível para iniciantes.</Text>
-      </TouchableOpacity>
+      <View style={styles.menuBox}>
+        <TouchableOpacity style={styles.button} onPress={() => onSelect("FACIL")}>
+          <Text style={styles.buttonText}>FÁCIL</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.btn} onPress={() => onSelect("MEDIO")}>
-        <Text style={styles.btnText}>MÉDIO</Text>
-        <Text style={styles.btnText}>Este modo cada vez que comeres a cobra, ela aumenta a velocidade, proporcionando um desafio equilibrado para jogadores com alguma experiência.</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => onSelect("MEDIO")}>
+          <Text style={styles.buttonText}>MÉDIO</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={styles.btn} onPress={() => onSelect("DIFICIL")}>
-        <Text style={styles.btnText}>DIFÍCIL</Text>
-        <Text style={styles.btnText}>Neste modo, para além de aumentar a velocidade da cobra normal cada vez que comeres, terás um inimigo a perseguir-te. Este modo encontra-se ainda em desenvolvimento, por isso não funciona por agora.</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, styles.hardButton]} onPress={() => onSelect("DIFICIL")}>
+          <Text style={styles.buttonText}>DIFÍCIL</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
+const PIXEL_BORDER = {
+  borderWidth: 4,
+  borderColor: "#00ff99",
+};
+
 const styles = StyleSheet.create({
-  root: {
+  container: {
     flex: 1,
     backgroundColor: "#111",
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 20,
   },
 
-title: {
-  color: "#00ff66",
-  fontSize: 28,       // era 38
-  marginBottom: 30,   // era 40
-  fontFamily: "VT323_400Regular",
-  letterSpacing: 2,
-},
+  title: {
+    fontFamily: "VT323",
+    fontSize: 52,
+    color: "#00ff99",
+    marginBottom: 50,
+    textShadowColor: "#008f66",
+    textShadowRadius: 10,
+  },
 
-btn: {
-  width: 180,          // era 220
-  paddingVertical: 10, // era 12
-  backgroundColor: "#222",
-  borderColor: "#00ff66",
-  borderWidth: 3,
-  marginVertical: 10,  // era 12
-},
+  menuBox: {
+    width: "85%",
+    gap: 20,
+  },
 
-btnText: {
-  color: "#00ff66",
-  fontSize: 16,        // era 22
-  textAlign: "center",
-  fontFamily: "VT323_400Regular",
-  letterSpacing: 1,
-},
+  button: {
+    backgroundColor: "#000",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    ...PIXEL_BORDER,
+  },
+
+  hardButton: {
+    borderColor: "#ff4d4d",
+  },
+
+  buttonText: {
+    fontFamily: "VT323",
+    fontSize: 30,
+    color: "#fff",
+    letterSpacing: 2,
+  },
 });
