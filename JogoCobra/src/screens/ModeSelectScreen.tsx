@@ -13,14 +13,17 @@ export default function ModeSelectionScreen({
 
       <TouchableOpacity style={styles.btn} onPress={() => onSelect("FACIL")}>
         <Text style={styles.btnText}>FÁCIL</Text>
+        <Text style={styles.btnText}>Neste modo, a velocidade da cobra é mais lenta, tornando o jogo mais acessível para iniciantes.</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.btn} onPress={() => onSelect("MEDIO")}>
         <Text style={styles.btnText}>MÉDIO</Text>
+        <Text style={styles.btnText}>Este modo cada vez que comeres a cobra, ela aumenta a velocidade, proporcionando um desafio equilibrado para jogadores com alguma experiência.</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.btn} onPress={() => onSelect("DIFICIL")}>
         <Text style={styles.btnText}>DIFÍCIL</Text>
+        <Text style={styles.btnText}>Neste modo, para além de aumentar a velocidade da cobra normal cada vez que comeres, terás um inimigo a perseguir-te. Este modo encontra-se ainda em desenvolvimento, por isso não funciona por agora.</Text>
       </TouchableOpacity>
     </View>
   );

@@ -5,8 +5,9 @@ export default function WelcomeScreen({ onContinue }: any) {
   return (
     <View style={styles.root}>
       <Text style={styles.title}>JOGO DA COBRA</Text>
+      <Text style={styles.btnText}>Bem-vindo ao jogo clássico da cobra. Este projeto ainda se encontra em desenvolvimento, por isso haverá falhas.</Text>
       <Text style={{ color: "#00ff66", fontSize: 20, marginBottom: 60, fontFamily: "VT323_400Regular" }}>
-        Toque em JOGAR para começar
+        Toca em JOGAR para começares a tua aventura!
       </Text>
       <TouchableOpacity style={styles.btn} onPress={onContinue}>
         <Text style={styles.btnText}>JOGAR</Text>
