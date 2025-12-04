@@ -26,25 +26,25 @@ const styles = StyleSheet.create({
 // MODIFICA APENAS ESTES ESTILOS:
 
 title: {
-  fontSize: 48,
+  fontSize: 34,        // era 48
   color: "#00ff66",
-  marginBottom: 30,
+  marginBottom: 20,    // era 30
   fontFamily: "VT323_400Regular",
   letterSpacing: 2,
 },
 
 btnText: {
   color: "#00ff66",
-  fontSize: 20,
+  fontSize: 16,        // era 20
   fontFamily: "VT323_400Regular",
 },
 
 
-  btn: {
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    backgroundColor: "#222",
-    borderWidth: 3,
-    borderColor: "#00ff66",
-  },
+btn: {
+  paddingVertical: 10,   // era 14
+  paddingHorizontal: 28, // era 40
+  backgroundColor: "#222",
+  borderWidth: 3,
+  borderColor: "#00ff66",
+},
 });

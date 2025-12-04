@@ -37,28 +37,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  title: {
-    color: "#00ff66",
-    fontSize: 38,
-    marginBottom: 40,
-    fontFamily: "VT323_400Regular",
-    letterSpacing: 2,
-  },
+title: {
+  color: "#00ff66",
+  fontSize: 28,       // era 38
+  marginBottom: 30,   // era 40
+  fontFamily: "VT323_400Regular",
+  letterSpacing: 2,
+},
 
-  btn: {
-    width: 220,
-    paddingVertical: 12,
-    backgroundColor: "#222",
-    borderColor: "#00ff66",
-    borderWidth: 3,
-    marginVertical: 12,
-  },
+btn: {
+  width: 180,          // era 220
+  paddingVertical: 10, // era 12
+  backgroundColor: "#222",
+  borderColor: "#00ff66",
+  borderWidth: 3,
+  marginVertical: 10,  // era 12
+},
 
-  btnText: {
-    color: "#00ff66",
-    fontSize: 22,
-    textAlign: "center",
-    fontFamily: "VT323_400Regular",
-    letterSpacing: 1,
-  },
+btnText: {
+  color: "#00ff66",
+  fontSize: 16,        // era 22
+  textAlign: "center",
+  fontFamily: "VT323_400Regular",
+  letterSpacing: 1,
+},
 });
