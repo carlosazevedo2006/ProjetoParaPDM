@@ -46,10 +46,7 @@ export default function GameBoard({
                 styles.snake,
                 { backgroundColor: corCobra },
                 anim && {
-                  transform: [
-                    { translateX: anim.x },
-                    { translateY: anim.y },
-                  ],
+                  transform: anim.getTranslateTransform(),
                 },
               ]}
             />
