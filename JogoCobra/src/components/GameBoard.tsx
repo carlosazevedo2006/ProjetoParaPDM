@@ -13,18 +13,25 @@ export default function GameBoard({
   corCobra,
   modoSelecionado,
   panHandlers,
+  colors,          // ← RECEBEMOS O TEMA AQUI
 }: any) {
-  // tamanho do tabuleiro com base no GRID_SIZE atual
-  const size = GRID_SIZE * CELULA;
 
-  // fallback seguro caso eatAnim seja undefined
+  const size = GRID_SIZE * CELULA;
   const safeEatAnim = eatAnim ?? new Animated.Value(1);
 
   return (
-    <View style={[styles.wrapper, { width: size, height: size }]} {...panHandlers}>
-      <View style={styles.board}>
+    <View
+      style={[styles.wrapper, { width: size, height: size }]}
+      {...panHandlers}
+    >
+      <View
+        style={[
+          styles.board,
+          { backgroundColor: colors.card },   // ← TEMA APLICADO
+        ]}
+      >
 
-        {/* --- COMIDA: use LEFT/TOP como fallback para garantir visibilidade --- */}
+        {/* --- COMIDA --- */}
         <Animated.View
           style={[
             styles.food,
@@ -36,54 +43,74 @@ export default function GameBoard({
           ]}
         />
 
-        {/* Cobra (segmentos animados) */}
+        {/* --- COBRA --- */}
         {cobra.map((seg: any, i: number) => {
           const anim = animSegments?.[i];
 
+          // animado
           if (anim && typeof anim.x !== "undefined") {
             return (
               <Animated.View
                 key={`s-${i}`}
                 style={[
                   styles.snake,
-                  { backgroundColor: corCobra ?? "#43a047", zIndex: 5 },
-                  { transform: [{ translateX: anim.x }, { translateY: anim.y }] },
+                  { backgroundColor: corCobra },
+                  {
+                    transform: [
+                      { translateX: anim.x },
+                      { translateY: anim.y },
+                    ],
+                  },
                 ]}
               />
             );
           }
 
+          // estático (fallback)
           return (
             <View
               key={`s-static-${i}`}
               style={[
                 styles.snake,
-                { backgroundColor: corCobra ?? "#43a047", zIndex: 5 },
-                { left: seg.x * CELULA, top: seg.y * CELULA },
+                {
+                  backgroundColor: corCobra,
+                  left: seg.x * CELULA,
+                  top: seg.y * CELULA,
+                },
               ]}
             />
           );
         })}
 
-        {/* Cobra inimiga (modo difícil) */}
+        {/* --- COBRA INIMIGA (difícil) --- */}
         {modoSelecionado === "DIFICIL" &&
           cobraInimiga?.map((seg: any, i: number) => {
             const anim = enemyAnimSegments?.[i];
+
             if (anim && typeof anim.x !== "undefined") {
               return (
                 <Animated.View
                   key={`e-${i}`}
                   style={[
                     styles.enemy,
-                    { transform: [{ translateX: anim.x }, { translateY: anim.y }], zIndex: 6 },
+                    {
+                      transform: [
+                        { translateX: anim.x },
+                        { translateY: anim.y },
+                      ],
+                    },
                   ]}
                 />
               );
             }
+
             return (
               <View
                 key={`e-static-${i}`}
-                style={[styles.enemy, { left: seg.x * CELULA, top: seg.y * CELULA }]}
+                style={[
+                  styles.enemy,
+                  { left: seg.x * CELULA, top: seg.y * CELULA },
+                ]}
               />
             );
           })}
@@ -102,35 +129,34 @@ const styles = StyleSheet.create({
   board: {
     width: "100%",
     height: "100%",
-    backgroundColor: "#0b0b0b", // ligeiro contraste, mantém o tabuleiro escuro
     position: "relative",
     overflow: "hidden",
+    borderRadius: 8,      // visual minimalista
   },
 
   snake: {
     position: "absolute",
     width: CELULA,
     height: CELULA,
-    borderRadius: 2,
+    borderRadius: 4,
   },
 
   enemy: {
     position: "absolute",
     width: CELULA,
     height: CELULA,
-    borderRadius: 2,
     backgroundColor: "#ff3b3b",
+    borderRadius: 4,
   },
 
   food: {
     position: "absolute",
     width: CELULA,
     height: CELULA,
-    backgroundColor: "#ffd400", // cor de alto contraste
-    borderRadius: 2,
+    backgroundColor: "#ff9500",
+    borderRadius: 6,
     zIndex: 10,
-    // tiny border to make it pop against dark bg
-    borderWidth: 1,
-    borderColor: "#b88600",
+    borderWidth: 1.5,
+    borderColor: "#b45c00",
   },
 });
