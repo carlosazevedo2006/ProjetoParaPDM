@@ -159,25 +159,31 @@ export default function Game() {
   if (showModeSelection)
     return (
       <ModeSelectScreen
-        onSelect={(modo: Modo) => {
-          setModoSelecionado(modo);
+  onSelect={(modo: Modo) => {
+    setModoSelecionado(modo);
 
-          resetCobra();
-          latestDirRef.current = DIRECOES.DIREITA;
+    resetCobra();
+    latestDirRef.current = DIRECOES.DIREITA;
 
-          // inimigo só no difícil (corrigido)
-          if (modo === "DIFICIL") {
-            setCobraInimiga([{ x: 14, y: 14 }]);
-          } else {
-            setCobraInimiga([]);
-          }
+    // inimigo só no difícil
+    if (modo === "DIFICIL") {
+      setCobraInimiga([{ x: 14, y: 14 }]);
+    } else {
+      setCobraInimiga([]);
+    }
 
-          enemyAnimSegments.current = [];
+    enemyAnimSegments.current = [];
 
-          setShowModeSelection(false);
-          iniciarContagem();
-        }}
-      />
+    setShowModeSelection(false);
+    iniciarContagem();
+  }}
+
+  onBack={() => {
+    setShowModeSelection(false);
+    setShowWelcome(true);
+  }}
+/>
+
     );
 
   if (contador !== null) return <CountdownScreen value={contador} />;
@@ -205,23 +211,24 @@ export default function Game() {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <Text style={[styles.score, { color: colors.textPrimary }]}>
-        {modoSelecionado} • {pontos} pts • REC {melhor}
+        {modoSelecionado} • {pontos} pontos • Melhor pontuação {melhor}
       </Text>
+    <GameBoard
+       cobra={cobra}
+       cobraInimiga={cobraInimiga}
+      comida={comida}
+       animSegments={animSegments.current}
+       enemyAnimSegments={enemyAnimSegments.current}
+      eatAnim={eatAnim}
+      corCobra={corCobra ?? "#43a047"}   // <-- fallback rígido garantido
+      modoSelecionado={modoSelecionado}
+      panHandlers={panResponder.panHandlers}
+/>
 
-      <GameBoard
-        cobra={cobra}
-        cobraInimiga={cobraInimiga}
-        comida={comida}
-        animSegments={animSegments.current}
-        enemyAnimSegments={enemyAnimSegments.current}
-        eatAnim={eatAnim}
-        corCobra={corCobra}
-        modoSelecionado={modoSelecionado}
-        panHandlers={panResponder.panHandlers}
-      />
 
       <Text style={[styles.tip, { color: colors.textSecondary }]}>
-        Deslize para mover a cobra
+        Desliza para CIMA, BAIXO, ESQUERDA ou DIREITA para mover a cobra, dentro do tabuleiro.
+        
       </Text>
     </View>
   );
