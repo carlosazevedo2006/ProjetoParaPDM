@@ -53,6 +53,7 @@ export default function useSnakeMovement({
 
   // Reset completo (use antes de começar a contagem)
   function resetCobra() {
+    // garantir latestDirRef válido no reset
     latestDirRef.current = DIRECOES.DIREITA;
     setDirecao(DIRECOES.DIREITA);
 
@@ -76,7 +77,17 @@ export default function useSnakeMovement({
       if (!prev || prev.length === 0) return prev;
 
       const head = prev[0];
-      const dir = latestDirRef.current;
+
+      // pega direção com fallback
+      const dir = latestDirRef.current ?? direcao;
+
+      // ---- ADIÇÃO DEFENSIVA: garantir dir válido antes de usar ----
+      if (typeof dir?.x !== "number" || typeof dir?.y !== "number") {
+        // se dir inválida, mantém estado e evita movimento que provoca gameOver imediato
+        return prev;
+      }
+      // -----------------------------------------------------------
+
       const novaHead: Posicao = { x: head.x + dir.x, y: head.y + dir.y };
 
       // colisão com paredes
@@ -137,7 +148,8 @@ export default function useSnakeMovement({
       // quando cresce precisa adicionar um Animated.ValueXY na posição da cauda anterior
       while (animSegments.current.length < novaCobra.length) {
         // tailRef: onde posicionar o novo segmento (cauda anterior)
-        const tailRef = prev.length >= 2 ? prev[prev.length - 1] : prev[0];
+        // usamos prev (estado anterior) para obter posição segura da cauda
+        const tailRef = prev.length >= 1 ? prev[prev.length - 1] : prev[0];
         const safe = tailRef || { x: startX, y: startY };
         animSegments.current.push(new Animated.ValueXY({ x: safe.x * CELULA, y: safe.y * CELULA }));
       }
@@ -194,6 +206,8 @@ export default function useSnakeMovement({
         if (raw) setMelhor(Number(raw));
       } catch {}
     })();
+    // adicionar limpeza opcional se o animSegments for usado por outros hooks (não necessário mas seguro)
+    return () => {};
   }, []);
 
   return {
