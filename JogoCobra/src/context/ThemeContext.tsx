@@ -1,65 +1,50 @@
+// src/context/ThemeContext.tsx
 import React, { createContext, useContext, useState } from "react";
-import { ColorValue } from "react-native";
 
-type ThemeName = "dark" | "light";
-
-const light = {
-  name: "light" as ThemeName,
-  background: "#f5f5f5",
-  card: "#ffffff",
-  primary: "#0f62fe",
-  textPrimary: "#111111",
-  textSecondary: "#333333",
-  buttonBg: "#0f62fe",
-  buttonText: "#ffffff",
-  boardBg: "#e9e9e9",
-  foodColor: "#ffb400",
+const lightColors = {
+  background: "#F5F5F5",
+  card: "#FFFFFF",
+  textPrimary: "#000000",
+  textSecondary: "#555555",
+  primary: "#2ecc71",
+  buttonText: "#FFFFFF",
+  backdrop: "rgba(0,0,0,0.25)",
 };
 
-const dark = {
-  name: "dark" as ThemeName,
-  background: "#0b0b0b",
-  card: "#111111",
-  primary: "#00e676",
-  textPrimary: "#e6ffee",
-  textSecondary: "#bfeecf",
-  buttonBg: "#00e676",
-  buttonText: "#0b0b0b",
-  boardBg: "#000000",
-  foodColor: "#ffd400",
+const darkColors = {
+  background: "#000000",
+  card: "#1A1A1A",
+  textPrimary: "#E8FFE8",
+  textSecondary: "#BBBBBB",
+  primary: "#00FF88",
+  buttonText: "#000000",
+  backdrop: "rgba(0,0,0,0.55)",
 };
 
-type Theme = typeof light;
+const ThemeContext = createContext<any>(null);
 
-const ThemeContext = createContext<{
-  theme: Theme;
-  themeName: ThemeName;
-  toggleTheme: () => void;
-  setThemeName: (t: ThemeName) => void;
-}>({
-  theme: dark,
-  themeName: "dark",
-  toggleTheme: () => {},
-  setThemeName: () => {},
-});
+export function ThemeProvider({ children }: any) {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [themeName, setThemeName] = useState<ThemeName>("dark");
-  const theme = themeName === "dark" ? dark : light;
+  const [snakeColor, setSnakeColor] = useState("#43a047");
 
-  function toggleTheme() {
-    setThemeName((t) => (t === "dark" ? "light" : "dark"));
-  }
+  const colors = theme === "light" ? lightColors : darkColors;
 
   return (
-    <ThemeContext.Provider value={{ theme, themeName, toggleTheme, setThemeName }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        setTheme,
+        colors,
+        snakeColor,
+        setSnakeColor,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
-};
+}
 
 export function useTheme() {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
-  return { colors: ctx.theme, themeName: ctx.themeName, toggleTheme: ctx.toggleTheme, setThemeName: ctx.setThemeName };
+  return useContext(ThemeContext);
 }
