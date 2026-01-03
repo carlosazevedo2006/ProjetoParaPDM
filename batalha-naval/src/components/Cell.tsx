@@ -4,7 +4,7 @@ import { Cell as CellModel } from '../models/Cell';
 interface CellProps {
   cell: CellModel;
   onPress?: () => void;
-  showShips?: boolean; // mostrar navios (meu tabuleiro)
+  showShips?: boolean;
 }
 
 export function Cell({ cell, onPress, showShips = false }: CellProps) {
@@ -23,7 +23,7 @@ export function Cell({ cell, onPress, showShips = false }: CellProps) {
   }
 
   return (
-    <Pressable onPress={onPress}>
+    <Pressable onPress={onPress} disabled={!onPress}>
       <View style={[styles.cell, { backgroundColor }]} />
     </Pressable>
   );
@@ -31,9 +31,10 @@ export function Cell({ cell, onPress, showShips = false }: CellProps) {
 
 const styles = StyleSheet.create({
   cell: {
-    width: 30,
-    height: 30,
+    width: 28,
+    height: 28,
     borderWidth: 1,
-    borderColor: '#000',
+    borderColor: '#0f3460',
+    margin: 0.5,
   },
 });
