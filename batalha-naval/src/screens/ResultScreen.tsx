@@ -2,11 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useGameContext } from '../context/GameContext';
 
-interface ResultScreenProps {
-  onRestart: () => void;
-}
-
-export function ResultScreen({ onRestart }: ResultScreenProps) {
+export function ResultScreen() {
   const { gameState, resetGame } = useGameContext();
 
   const winner = gameState.players.find(p => p.id === gameState.winnerId);
@@ -20,14 +16,13 @@ export function ResultScreen({ onRestart }: ResultScreenProps) {
     );
   }
 
-  const winnerShots = loser.board.grid.flat().filter(c => c.hit).length;
-  const winnerHits = loser.board.grid.flat().filter(c => c.hit && c.hasShip).length;
+  const winnerShots = loser.board.cells.flat().filter(c => c.hit).length;
+  const winnerHits = loser.board.cells.flat().filter(c => c.hit && c.shipId).length;
   const winnerMisses = winnerShots - winnerHits;
   const accuracy = winnerShots > 0 ? ((winnerHits / winnerShots) * 100).toFixed(1) : '0';
 
   function handleRestart() {
     resetGame();
-    onRestart();
   }
 
   return (
