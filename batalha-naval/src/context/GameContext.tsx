@@ -8,6 +8,14 @@ import { ShotResult } from '../models/ShotResult';
 import { Network } from '../services/network';
 import { getServerUrl, getRoomSalt } from '../utils/config';
 
+/**
+ * Normalizes a player name for comparison
+ * Converts to lowercase and trims whitespace
+ */
+function normalizeName(name: string): string {
+  return name.toLowerCase().trim();
+}
+
 interface GameContextType {
   gameState: GameState;
   myPlayerId?: string; // jogador controlado neste dispositivo
@@ -62,9 +70,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       // When server state arrives, re-map myPlayerId based on our local name
       // Use case-insensitive matching since player names might have different casing
       if (localSelfNameRef.current && state.players.length > 0) {
-        const localNameLower = localSelfNameRef.current.toLowerCase().trim();
+        const localNameNormalized = normalizeName(localSelfNameRef.current);
         const matchingPlayer = state.players.find(
-          p => p.name.toLowerCase().trim() === localNameLower
+          p => normalizeName(p.name) === localNameNormalized
         );
         if (matchingPlayer) {
           setMyPlayerId(matchingPlayer.id);

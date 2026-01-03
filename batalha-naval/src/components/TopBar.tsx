@@ -63,7 +63,7 @@ export function TopBar({ onBack, backLabel = 'Voltar', rightText }: TopBarProps)
                 <Text style={styles.boldText}>1. Configure o servidor:</Text>{'\n'}
                 • Ambos os dispositivos na mesma rede WiFi{'\n'}
                 • Configure serverUrl no app.json{'\n'}
-                • Veja NETWORK_SETUP.md para detalhes{'\n\n'}
+                • Consulte a documentação do desenvolvedor{'\n\n'}
                 
                 <Text style={styles.boldText}>2. Emparelhamento:</Text>{'\n'}
                 • Cada dispositivo digita os MESMOS dois nomes{'\n'}
