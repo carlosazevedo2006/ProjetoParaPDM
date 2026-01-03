@@ -3,10 +3,22 @@ import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import { Board } from '../components/Board';
 import { useGameContext } from '../context/GameContext';
 import { ShotResult } from '../models/ShotResult';
+import { TopBar } from '../components/TopBar';
 
 export function GameScreen() {
-  const { gameState, fire, myPlayerId } = useGameContext();
+  const { gameState, fire, myPlayerId, resetGame } = useGameContext();
   const [lastShotResult, setLastShotResult] = useState<ShotResult['outcome'] | ''>('');
+
+  function handleBack() {
+    Alert.alert(
+      'Sair do Jogo',
+      'Tem certeza que deseja sair? O jogo será encerrado.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Sair', onPress: () => resetGame(), style: 'destructive' },
+      ]
+    );
+  }
 
   if (gameState.players.length < 2) {
     return (
@@ -20,10 +32,16 @@ export function GameScreen() {
   const opponent = gameState.players.find(p => p.id !== gameState.currentTurnPlayerId)!;
 
   // Este dispositivo pode agir se o turno atual pertence ao jogador local
+  // Em modo local (myPlayerId undefined), sempre permite ação
   const canAct = useMemo(
-    () => !!myPlayerId && gameState.currentTurnPlayerId === myPlayerId,
+    () => !myPlayerId || gameState.currentTurnPlayerId === myPlayerId,
     [myPlayerId, gameState.currentTurnPlayerId]
   );
+  
+  // Show which player this device controls (only in multiplayer)
+  const devicePlayerText = myPlayerId 
+    ? `Você: ${gameState.players.find(p => p.id === myPlayerId)?.name || 'N/A'}`
+    : undefined;
 
   function handleFire(row: number, col: number) {
     if (!canAct) {
@@ -66,53 +84,56 @@ export function GameScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.turnIndicator}>
-        <Text style={styles.turnText}>Turno: {currentPlayer.name}</Text>
-        {lastShotResult && (
-          <View style={[
-            styles.resultBadge,
-            lastShotResult === 'water' && styles.resultWater,
-            lastShotResult === 'hit' && styles.resultHit,
-            lastShotResult === 'sunk' && styles.resultSunk,
-          ]}>
-            <Text style={styles.resultText}>
-              {lastShotResult === 'water' && '💦 Água'}
-              {lastShotResult === 'hit' && '💥 Acerto'}
-              {lastShotResult === 'sunk' && '🔥 Afundado'}
-            </Text>
-          </View>
-        )}
-      </View>
+      <TopBar onBack={handleBack} rightText={devicePlayerText} />
+      <View style={styles.content}>
+        <View style={styles.turnIndicator}>
+          <Text style={styles.turnText}>Turno: {currentPlayer.name}</Text>
+          {lastShotResult && (
+            <View style={[
+              styles.resultBadge,
+              lastShotResult === 'water' && styles.resultWater,
+              lastShotResult === 'hit' && styles.resultHit,
+              lastShotResult === 'sunk' && styles.resultSunk,
+            ]}>
+              <Text style={styles.resultText}>
+                {lastShotResult === 'water' && '💦 Água'}
+                {lastShotResult === 'hit' && '💥 Acerto'}
+                {lastShotResult === 'sunk' && '🔥 Afundado'}
+              </Text>
+            </View>
+          )}
+        </View>
 
-      <View style={styles.boardSection}>
-        <Text style={styles.boardTitle}>Meu Oceano 🌊</Text>
-        <Text style={styles.boardSubtitle}>
-          Navios: {currentPlayer.board.ships.filter(s => s.hits < s.size).length} / {currentPlayer.board.ships.length}
-        </Text>
-        <Board board={currentPlayer.board} showShips={true} />
-      </View>
+        <View style={styles.boardSection}>
+          <Text style={styles.boardTitle}>Meu Oceano 🌊</Text>
+          <Text style={styles.boardSubtitle}>
+            Navios: {currentPlayer.board.ships.filter(s => s.hits < s.size).length} / {currentPlayer.board.ships.length}
+          </Text>
+          <Board board={currentPlayer.board} showShips={true} />
+        </View>
 
-      <View style={styles.boardSection}>
-        <Text style={styles.boardTitle}>Radar do Inimigo 🎯</Text>
-        <Text style={styles.boardSubtitle}>Toca numa célula para disparar</Text>
-        <Board
-          board={opponent.board}
-          onCellPress={canAct ? handleFire : undefined}
-          showShips={false}
-        />
-      </View>
+        <View style={styles.boardSection}>
+          <Text style={styles.boardTitle}>Radar do Inimigo 🎯</Text>
+          <Text style={styles.boardSubtitle}>Toca numa célula para disparar</Text>
+          <Board
+            board={opponent.board}
+            onCellPress={canAct ? handleFire : undefined}
+            showShips={false}
+          />
+        </View>
 
-      <View style={styles.statsBox}>
-        <Text style={styles.statsTitle}>Estatísticas:</Text>
-        <Text style={styles.statsText}>
-          📊 Total de disparos: {opponent.board.cells.flat().filter(c => c.hit).length}
-        </Text>
-        <Text style={styles.statsText}>
-          🎯 Acertos: {opponent.board.cells.flat().filter(c => c.hit && c.shipId).length}
-        </Text>
-        <Text style={styles.statsText}>
-          💦 Água: {opponent.board.cells.flat().filter(c => c.hit && !c.shipId).length}
-        </Text>
+        <View style={styles.statsBox}>
+          <Text style={styles.statsTitle}>Estatísticas:</Text>
+          <Text style={styles.statsText}>
+            📊 Total de disparos: {opponent.board.cells.flat().filter(c => c.hit).length}
+          </Text>
+          <Text style={styles.statsText}>
+            🎯 Acertos: {opponent.board.cells.flat().filter(c => c.hit && c.shipId).length}
+          </Text>
+          <Text style={styles.statsText}>
+            💦 Água: {opponent.board.cells.flat().filter(c => c.hit && !c.shipId).length}
+          </Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -121,8 +142,11 @@ export function GameScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 20,
     backgroundColor: '#1a1a2e',
+  },
+  content: {
+    flexGrow: 1,
+    padding: 20,
     alignItems: 'center',
   },
   center: {

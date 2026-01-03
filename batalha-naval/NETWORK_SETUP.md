@@ -23,6 +23,18 @@ The room ID is deterministic (derived from sorted names + salt), so no manual ro
 3. **Game**: Players take turns firing at each other's boards
 4. **Result**: Winner is displayed, then both can start a new game
 
+## In-App Help
+
+The app now includes built-in help accessible from all screens:
+- Click the **"❓ Ajuda"** button in the TopBar (center) to view instructions
+- The help modal explains:
+  - How to play in Local mode
+  - How to pair devices for Multiplayer (WLAN) mode
+  - Gameplay mechanics and objectives
+  - Tips for using the interface
+
+This eliminates the need to consult external documentation while playing!
+
 ## Server Setup
 
 ### Prerequisites
@@ -230,23 +242,51 @@ Then open on two devices using Expo Go or development build.
 
 ## Playing Multiplayer
 
-**Important:** Each player enters their OWN name in the "Jogador 1" field and the opponent's name in "Jogador 2".
+**IMPORTANT PAIRING INSTRUCTIONS:**
 
-### Device 1 (Alice):
+Each device must enter the SAME two player names, but with a crucial difference:
+- **On your device**: Enter YOUR name in "Jogador 1" and the opponent's name in "Jogador 2"
+- **On opponent's device**: They enter THEIR name in "Jogador 1" and your name in "Jogador 2"
+
+This is how the app knows which player each device controls!
+
+### Example Setup - Alice vs Bob:
+
+**Device 1 (Alice's phone):**
 1. Open the app
-2. Enter: Player 1 = "Alice" (your name), Player 2 = "Bob" (opponent's name)
+2. Enter: 
+   - **Jogador 1** = "Alice" ← YOUR name goes here
+   - **Jogador 2** = "Bob" ← Opponent's name
 3. Press "Iniciar Jogo"
 4. Ships auto-placed → Press "Iniciar Jogo" again
 5. Wait for Device 2
 
-### Device 2 (Bob):
+**Device 2 (Bob's phone):**
 1. Open the app
-2. Enter: Player 1 = "Bob" (your name), Player 2 = "Alice" (opponent's name)
+2. Enter:
+   - **Jogador 1** = "Bob" ← YOUR name goes here  
+   - **Jogador 2** = "Alice" ← Opponent's name
 3. Press "Iniciar Jogo"
 4. Ships auto-placed → Press "Iniciar Jogo" again
 5. Game starts!
 
-Both devices will now be synchronized. The app automatically maps each device to the correct player based on the name entered in "Jogador 1" field. Players are internally mapped by alphabetical order (Alice=player1, Bob=player2), ensuring both devices have consistent game state.
+### How It Works:
+
+Both devices will automatically join the same game room because they used the same two names (Alice and Bob). The app internally sorts the names alphabetically to create a consistent room ID. Each device controls the player whose name was entered in the "Jogador 1" field on that device.
+
+### During Gameplay:
+
+- The TopBar shows "Você: [Your Player Name]" to remind you which player you control
+- You can only tap cells on the enemy radar when it's YOUR turn
+- The turn indicator shows whose turn it is currently
+- If you try to tap when it's not your turn, you'll get an alert
+
+### Verification:
+
+After both players press "Iniciar Jogo" in Setup:
+- Check the TopBar in the Game screen
+- It should say "Você: [Your Name]"
+- If it shows the wrong name, restart and check you entered YOUR name in "Jogador 1"
 
 ## Network Protocol
 

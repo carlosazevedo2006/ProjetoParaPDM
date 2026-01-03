@@ -6,7 +6,15 @@ import { placeFleetRandomly } from '../services/shipPlacement';
 import { shoot, areAllShipsSunk } from '../services/gameLogic';
 import { ShotResult } from '../models/ShotResult';
 import { Network } from '../services/network';
-import Constants from 'expo-constants';
+import { getServerUrl, getRoomSalt } from '../utils/config';
+
+/**
+ * Normalizes a player name for comparison
+ * Converts to lowercase and trims whitespace
+ */
+function normalizeName(name: string): string {
+  return name.toLowerCase().trim();
+}
 
 interface GameContextType {
   gameState: GameState;
@@ -20,20 +28,8 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-function getServerUrl(): string | undefined {
-  const extra: any =
-    (Constants as any)?.expoConfig?.extra ??
-    (Constants as any)?.manifest?.extra ??
-    undefined;
-  return extra?.serverUrl;
-}
-
 function makeRoomId(player1Name: string, player2Name: string): string {
-  const extra: any =
-    (Constants as any)?.expoConfig?.extra ??
-    (Constants as any)?.manifest?.extra ??
-    {};
-  const salt = extra?.roomSalt ?? 'bn';
+  const salt = getRoomSalt();
   const joined = [player1Name.trim(), player2Name.trim()].sort().join('#') + '#' + salt;
   let h = 0;
   for (let i = 0; i < joined.length; i++) {
@@ -59,6 +55,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const selfIdRef = useRef<string>('cli_' + Math.random().toString(36).slice(2, 8));
   const roomIdRef = useRef<string | undefined>(undefined);
 
+  const localSelfNameRef = useRef<string>('');
+
   useEffect(() => {
     if (!multiplayer) return;
     if (networkRef.current) return;
@@ -68,6 +66,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
     // O servidor envia o estado autoritativo. Substituímos localmente.
     n.on('SERVER_STATE', (state: GameState) => {
       setGameState(state);
+      
+      // When server state arrives, re-map myPlayerId based on our local name
+      // Use case-insensitive matching since player names might have different casing
+      if (localSelfNameRef.current && state.players.length > 0) {
+        const localNameNormalized = normalizeName(localSelfNameRef.current);
+        const matchingPlayer = state.players.find(
+          p => normalizeName(p.name) === localNameNormalized
+        );
+        if (matchingPlayer) {
+          setMyPlayerId(matchingPlayer.id);
+        }
+      }
     });
 
     (async () => {
@@ -81,17 +91,46 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   function createPlayers(player1Name: string, player2Name: string) {
     // IMPORTANTE: o nome no campo "Jogador 1" DESTE dispositivo é o jogador local
-    // Mapeamos myPlayerId baseado em qual nome na lista ordenada corresponde ao player1Name local
     const trimmedPlayer1 = player1Name.trim();
     const trimmedPlayer2 = player2Name.trim();
-    const sortedNames = [trimmedPlayer1, trimmedPlayer2].sort();
-    const myNameIndex = sortedNames.indexOf(trimmedPlayer1);
-    const localPlayerId = myNameIndex === 0 ? 'player1' : 'player2';
     
-    setMyPlayerId(localPlayerId);
+    // Store the local player's name for later server state mapping
+    localSelfNameRef.current = trimmedPlayer1;
+    
+    if (!multiplayer) {
+      // Em modo local, não há dispositivos separados, então myPlayerId não é necessário
+      // mas definimos como player1 por padrão para consistência
+      setMyPlayerId(undefined);
+      
+      const player1: Player = {
+        id: 'player1',
+        name: trimmedPlayer1,
+        board: createEmptyBoard(),
+        isReady: false,
+      };
+
+      const player2: Player = {
+        id: 'player2',
+        name: trimmedPlayer2,
+        board: createEmptyBoard(),
+        isReady: false,
+      };
+
+      setGameState({
+        players: [player1, player2],
+        currentTurnPlayerId: player1.id,
+        phase: 'setup',
+      });
+      return;
+    }
 
     // Em multiplayer, os IDs dos jogadores são consistentes baseados na ordem alfabética
     // para que ambos os dispositivos tenham o mesmo mapeamento
+    const sortedNames = [trimmedPlayer1, trimmedPlayer2].sort();
+    const myNameIndex = sortedNames.indexOf(trimmedPlayer1);
+    const localPlayerId = myNameIndex === 0 ? 'player1' : 'player2';
+    setMyPlayerId(localPlayerId);
+
     const player1: Player = {
       id: 'player1',
       name: sortedNames[0],
@@ -105,18 +144,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       board: createEmptyBoard(),
       isReady: false,
     };
-
-    if (!multiplayer) {
-      // Em modo local, usamos os nomes na ordem digitada
-      player1.name = player1Name;
-      player2.name = player2Name;
-      setGameState({
-        players: [player1, player2],
-        currentTurnPlayerId: player1.id,
-        phase: 'setup',
-      });
-      return;
-    }
 
     const roomId = makeRoomId(player1Name, player2Name);
     roomIdRef.current = roomId;

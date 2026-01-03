@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useGameContext } from '../context/GameContext';
+import { TopBar } from '../components/TopBar';
 
 export function LobbyScreen() {
   const [player1Name, setPlayer1Name] = useState('Jogador 1');
@@ -17,31 +18,34 @@ export function LobbyScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>⚓ Batalha Naval ⚓</Text>
-      <Text style={styles.subtitle}>Multiplayer WLAN</Text>
+      <TopBar />
+      <View style={styles.content}>
+        <Text style={styles.title}>⚓ Batalha Naval ⚓</Text>
+        <Text style={styles.subtitle}>Multiplayer WLAN</Text>
 
-      <View style={styles.form}>
-        <Text style={styles.label}>Nome do Jogador 1:</Text>
-        <TextInput
-          style={styles.input}
-          value={player1Name}
-          onChangeText={setPlayer1Name}
-          placeholder="Digite o nome do Jogador 1"
-          placeholderTextColor="#999"
-        />
+        <View style={styles.form}>
+          <Text style={styles.label}>Nome do Jogador 1:</Text>
+          <TextInput
+            style={styles.input}
+            value={player1Name}
+            onChangeText={setPlayer1Name}
+            placeholder="Digite o nome do Jogador 1"
+            placeholderTextColor="#999"
+          />
 
-        <Text style={styles.label}>Nome do Jogador 2:</Text>
-        <TextInput
-          style={styles.input}
-          value={player2Name}
-          onChangeText={setPlayer2Name}
-          placeholder="Digite o nome do Jogador 2"
-          placeholderTextColor="#999"
-        />
+          <Text style={styles.label}>Nome do Jogador 2:</Text>
+          <TextInput
+            style={styles.input}
+            value={player2Name}
+            onChangeText={setPlayer2Name}
+            placeholder="Digite o nome do Jogador 2"
+            placeholderTextColor="#999"
+          />
 
-        <TouchableOpacity style={styles.button} onPress={handleStartGame}>
-          <Text style={styles.buttonText}>Iniciar Jogo</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleStartGame}>
+            <Text style={styles.buttonText}>Iniciar Jogo</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -50,8 +54,11 @@ export function LobbyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#1a1a2e',
+  },
+  content: {
+    flex: 1,
+    padding: 20,
     justifyContent: 'center',
   },
   title: {
