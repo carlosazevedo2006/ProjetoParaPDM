@@ -7,9 +7,11 @@ export type Cell = {
 
 export type Ship = {
   id: string;
+  name: string;
   size: number;
   cells: { row: number; col: number }[];
   hits: number;
+  orientation: 'horizontal' | 'vertical';
 };
 
 export type Board = {

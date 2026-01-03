@@ -20,8 +20,8 @@ export function ResultScreen({ onRestart }: ResultScreenProps) {
     );
   }
 
-  const winnerShots = loser.board.grid.flat().filter(c => c.hit).length;
-  const winnerHits = loser.board.grid.flat().filter(c => c.hit && c.hasShip).length;
+  const winnerShots = loser.board.cells.flat().filter(c => c.hit).length;
+  const winnerHits = loser.board.cells.flat().filter(c => c.hit && c.shipId).length;
   const winnerMisses = winnerShots - winnerHits;
   const accuracy = winnerShots > 0 ? ((winnerHits / winnerShots) * 100).toFixed(1) : '0';
 

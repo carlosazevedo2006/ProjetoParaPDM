@@ -20,10 +20,16 @@ export function GameScreen() {
   const opponent = gameState.players.find(p => p.id !== gameState.currentTurnPlayerId);
 
   if (!currentPlayer || !opponent) {
-    return null;
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>Erro ao carregar jogadores</Text>
+      </View>
+    );
   }
 
   function handleFire(row: number, col: number) {
+    if (!currentPlayer || !opponent) return; // Extra safety check
+    
     if (opponent.board.cells[row][col].hit) {
       Alert.alert('Atenção', 'Já disparaste nesta posição!');
       return;

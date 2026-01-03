@@ -1,9 +1,12 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import Constants from 'expo-constants';
 import { GameState, GamePhase } from '../models/GameState';
 import { Player } from '../models/Player';
-import { createEmptyBoard } from '../utils/boardHelpers';
+import { createEmptyBoard, placeFleetRandomly } from '../utils/boardHelpers';
 import { shoot, areAllShipsSunk } from '../services/gameLogic';
 import { ShotResult } from '../models/ShotResult';
+import { Network } from '../services/network';
+import { SHIPS_CONFIG } from '../utils/constants';
 
 interface GameContextType {
   gameState: GameState;
@@ -16,6 +19,12 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
+// Simple deterministic room ID from two names
+function makeRoomId(name1: string, name2: string, salt: string): string {
+  const sorted = [name1.toLowerCase().trim(), name2.toLowerCase().trim()].sort();
+  return `room_${sorted[0]}_${sorted[1]}_${salt}`.replace(/[^a-z0-9_]/g, '_');
+}
+
 export function GameProvider({ children }: { children: ReactNode }) {
   const [gameState, setGameState] = useState<GameState>({
     players: [],
@@ -23,42 +32,97 @@ export function GameProvider({ children }: { children: ReactNode }) {
     phase: 'lobby',
   });
 
+  const [network, setNetwork] = useState<Network | null>(null);
+  const [isMultiplayer, setIsMultiplayer] = useState(false);
+
+  useEffect(() => {
+    const serverUrl = Constants.expoConfig?.extra?.serverUrl;
+    const roomSalt = Constants.expoConfig?.extra?.roomSalt || 'default-salt';
+    
+    if (serverUrl && serverUrl.trim()) {
+      const net = new Network();
+      net.connect(serverUrl).then(() => {
+        setNetwork(net);
+        setIsMultiplayer(true);
+        
+        // Listen for server state updates
+        net.on('SERVER_STATE', (payload: GameState) => {
+          setGameState(payload);
+        });
+      }).catch((err) => {
+        console.error('Failed to connect to server:', err);
+        setIsMultiplayer(false);
+      });
+    }
+  }, []);
+
   function createPlayers(player1Name: string, player2Name: string) {
+    const selfId = network ? network.makePlayerId() : 'player1';
+    
     const player1: Player = {
-      id: 'player1',
+      id: isMultiplayer ? selfId : 'player1',
       name: player1Name,
       board: createEmptyBoard(),
       isReady: false,
     };
 
     const player2: Player = {
-      id: 'player2',
+      id: isMultiplayer ? 'remote' : 'player2',
       name: player2Name,
       board: createEmptyBoard(),
       isReady: false,
     };
 
-    setGameState({
+    const newState: GameState = {
       players: [player1, player2],
       currentTurnPlayerId: player1.id,
       phase: 'setup',
-    });
+      selfId: isMultiplayer ? selfId : undefined,
+      roomId: undefined,
+    };
+
+    // If multiplayer, create/join room
+    if (isMultiplayer && network) {
+      const roomSalt = Constants.expoConfig?.extra?.roomSalt || 'default-salt';
+      const roomId = makeRoomId(player1Name, player2Name, roomSalt);
+      newState.roomId = roomId;
+      
+      network.emit('JOIN_ROOM', { roomId, playerId: selfId, playerName: player1Name });
+    }
+
+    setGameState(newState);
   }
 
   function setPlayerReady(playerId: string) {
     setGameState(prev => {
-      const players = prev.players.map(player =>
-        player.id === playerId ? { ...player, isReady: true } : player
-      );
+      const players = prev.players.map(player => {
+        if (player.id === playerId) {
+          // Auto-place fleet if no ships placed
+          if (player.board.ships.length === 0) {
+            const newBoard = createEmptyBoard();
+            placeFleetRandomly(newBoard, SHIPS_CONFIG);
+            return { ...player, board: newBoard, isReady: true };
+          }
+          return { ...player, isReady: true };
+        }
+        return player;
+      });
 
       const allReady = players.every(p => p.isReady);
 
-      return {
+      const newState = {
         ...prev,
         players,
         phase: allReady ? 'playing' : prev.phase,
         currentTurnPlayerId: allReady ? players[0].id : prev.currentTurnPlayerId,
       };
+
+      // Emit ready state in multiplayer
+      if (isMultiplayer && network) {
+        network.emit('PLAYER_READY', { playerId, roomId: prev.roomId });
+      }
+
+      return newState;
     });
   }
 
@@ -77,7 +141,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const gameFinished = areAllShipsSunk(updatedDefender.board);
 
     setGameState(prev => {
-      const nextTurn = prev.players[defenderIndex].id; // Regra B: alterna sempre
+      const nextTurn = prev.players[defenderIndex].id; // Rule B: always alternate
       return {
         ...prev,
         players: updatedPlayers,
@@ -87,10 +151,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
       };
     });
 
+    // Emit fire event in multiplayer
+    if (isMultiplayer && network) {
+      network.emit('FIRE', {
+        roomId: gameState.roomId,
+        attackerId,
+        targetRow,
+        targetCol,
+      });
+    }
+
     return result;
   }
 
   function resetGame() {
+    if (isMultiplayer && network) {
+      network.emit('RESET', { roomId: gameState.roomId });
+    }
+
     setGameState({
       players: [],
       currentTurnPlayerId: '',

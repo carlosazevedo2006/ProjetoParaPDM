@@ -7,4 +7,6 @@ export interface GameState {
   currentTurnPlayerId: string;
   phase: GamePhase;
   winnerId?: string;
+  selfId?: string;
+  roomId?: string;
 }

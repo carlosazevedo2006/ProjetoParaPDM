@@ -28,6 +28,10 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "serverUrl": "",
+      "roomSalt": "batalha-naval-2026"
+    }
   }
 }

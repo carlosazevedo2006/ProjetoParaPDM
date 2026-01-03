@@ -19,7 +19,7 @@ function Root() {
       case 'playing':
         return <GameScreen />;
       case 'finished':
-        return <ResultScreen />;
+        return <ResultScreen onRestart={() => {}} />;
       default:
         return <LobbyScreen />;
     }
