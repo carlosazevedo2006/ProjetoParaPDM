@@ -23,6 +23,18 @@ The room ID is deterministic (derived from sorted names + salt), so no manual ro
 3. **Game**: Players take turns firing at each other's boards
 4. **Result**: Winner is displayed, then both can start a new game
 
+## In-App Help
+
+The app now includes built-in help accessible from all screens:
+- Click the **"❓ Ajuda"** button in the TopBar (center) to view instructions
+- The help modal explains:
+  - How to play in Local mode
+  - How to pair devices for Multiplayer (WLAN) mode
+  - Gameplay mechanics and objectives
+  - Tips for using the interface
+
+This eliminates the need to consult external documentation while playing!
+
 ## Server Setup
 
 ### Prerequisites
