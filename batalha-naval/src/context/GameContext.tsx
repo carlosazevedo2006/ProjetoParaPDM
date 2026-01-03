@@ -21,8 +21,10 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 
 // Simple deterministic room ID from two names
 function makeRoomId(name1: string, name2: string, salt: string): string {
-  const sorted = [name1.toLowerCase().trim(), name2.toLowerCase().trim()].sort();
-  return `room_${sorted[0]}_${sorted[1]}_${salt}`.replace(/[^a-z0-9_]/g, '_');
+  const clean1 = name1.toLowerCase().trim().replace(/[^a-z0-9]/g, '_');
+  const clean2 = name2.toLowerCase().trim().replace(/[^a-z0-9]/g, '_');
+  const sorted = [clean1, clean2].sort();
+  return `room:${sorted[0]}:${sorted[1]}:${salt.replace(/[^a-z0-9]/g, '_')}`;
 }
 
 export function GameProvider({ children }: { children: ReactNode }) {
