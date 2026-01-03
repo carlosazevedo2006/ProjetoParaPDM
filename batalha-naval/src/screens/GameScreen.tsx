@@ -50,12 +50,10 @@ export function GameScreen({ onGameEnd }: GameScreenProps) {
     if (result === 'water') {
       message = '💦 Água!';
       setLastShotResult('water');
-    }
-    if (result === 'hit') {
+    } else if (result === 'hit') {
       message = '💥 Acertou!';
       setLastShotResult('hit');
-    }
-    if (result === 'sunk') {
+    } else if (result === 'sunk') {
       message = '🔥 Navio Afundado!';
       setLastShotResult('sunk');
     }

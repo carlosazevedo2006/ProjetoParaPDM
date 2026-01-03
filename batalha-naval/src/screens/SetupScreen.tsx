@@ -23,6 +23,7 @@ export function SetupScreen({ onReady }: SetupScreenProps) {
 
   const currentPlayer = gameState.players[currentPlayerIndex];
   const allReady = gameState.players.every(p => p.isReady);
+  const allShipsPlaced = currentPlayer.board.ships.length === SHIPS_CONFIG.length;
 
   function handleRandomPlacement() {
     const success = placeFleetRandomly(currentPlayer.board);
@@ -35,7 +36,7 @@ export function SetupScreen({ onReady }: SetupScreenProps) {
   }
 
   function handleReady() {
-    if (currentPlayer.board.ships.length !== SHIPS_CONFIG.length) {
+    if (!allShipsPlaced) {
       Alert.alert('Erro', `Coloca todos os ${SHIPS_CONFIG.length} navios primeiro!`);
       return;
     }
@@ -97,10 +98,10 @@ export function SetupScreen({ onReady }: SetupScreenProps) {
         <TouchableOpacity
           style={[
             styles.buttonPrimary,
-            currentPlayer.board.ships.length !== SHIPS_CONFIG.length && styles.buttonDisabled
+            !allShipsPlaced && styles.buttonDisabled
           ]}
           onPress={handleReady}
-          disabled={currentPlayer.board.ships.length !== SHIPS_CONFIG.length}
+          disabled={!allShipsPlaced}
         >
           <Text style={styles.buttonText}>
             {currentPlayerIndex < gameState.players.length - 1 ? 'Próximo Jogador' : 'Iniciar Jogo'}

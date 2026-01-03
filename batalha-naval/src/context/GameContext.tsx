@@ -86,11 +86,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const gameFinished = areAllShipsSunk(defender.board);
 
     setGameState(prev => {
-      let nextTurn = prev.currentTurnPlayerId;
-
-      if (!gameFinished) {
-        nextTurn = prev.players[defenderIndex].id;
-      }
+      // Alterna sempre para o próximo jogador
+      const nextTurn = prev.players[defenderIndex].id;
 
       return {
         ...prev,

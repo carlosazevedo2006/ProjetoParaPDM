@@ -96,7 +96,7 @@ export class NetworkService {
    * Gerar ID único para sala
    */
   private generateRoomId(): string {
-    return Math.random().toString(36).substr(2, 9).toUpperCase();
+    return Math.random().toString(36).substring(2, 9).toUpperCase();
   }
 }
 
