@@ -1,5 +1,5 @@
-import { Board } from '../models/Board';
-import { Ship, ShipOrientation, ShipPosition } from '../models/Ship';
+import { Board, Ship as BoardShip } from '../models/Board';
+import { ShipOrientation } from '../models/Ship';
 import { BOARD_SIZE, SHIPS_CONFIG } from '../utils/constants';
 import { isInsideBoard } from '../utils/boardHelpers';
 import { randomInt, randomFromArray } from '../utils/random';
@@ -12,7 +12,7 @@ export function canPlaceShip(
   size: number,
   orientation: ShipOrientation
 ): boolean {
-  const positions: ShipPosition[] = [];
+  const positions: { row: number; col: number }[] = [];
 
   for (let i = 0; i < size; i++) {
     const row = orientation === 'horizontal' ? startRow : startRow + i;
@@ -27,7 +27,7 @@ export function canPlaceShip(
     for (let r = p.row - 1; r <= p.row + 1; r++) {
       for (let c = p.col - 1; c <= p.col + 1; c++) {
         if (!isInsideBoard(r, c)) continue;
-        if (board.grid[r][c].hasShip) return false;
+        if (board.cells[r][c].shipId) return false;
       }
     }
   }
@@ -43,25 +43,25 @@ export function placeShip(
   row: number,
   col: number,
   orientation: ShipOrientation
-): Ship | null {
+): BoardShip | null {
   if (!canPlaceShip(board, row, col, size, orientation)) return null;
 
-  const positions: ShipPosition[] = [];
+  const shipId = `${name}-${Date.now()}`;
+  const positions: { row: number; col: number }[] = [];
 
   for (let i = 0; i < size; i++) {
     const r = orientation === 'horizontal' ? row : row + i;
     const c = orientation === 'horizontal' ? col + i : col;
-    board.grid[r][c].hasShip = true;
+    board.cells[r][c].shipId = shipId;
     positions.push({ row: r, col: c });
   }
 
-  const ship: Ship = {
-    id: `${name}-${Date.now()}`,
+  const ship: BoardShip = {
+    id: shipId,
     name,
     size,
-    positions,
+    cells: positions,
     hits: 0,
-    orientation,
   };
 
   board.ships.push(ship);
@@ -74,8 +74,8 @@ export function placeFleetRandomly(board: Board): boolean {
 
   for (let r = 0; r < BOARD_SIZE; r++) {
     for (let c = 0; c < BOARD_SIZE; c++) {
-      board.grid[r][c].hasShip = false;
-      board.grid[r][c].hit = false;
+      board.cells[r][c].shipId = undefined;
+      board.cells[r][c].hit = false;
     }
   }
 

@@ -11,3 +11,7 @@ export function createEmptyBoard(): Board {
   }
   return { cells, ships: [] };
 }
+
+export function isInsideBoard(row: number, col: number): boolean {
+  return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+}

@@ -4,6 +4,7 @@ import { Player } from '../models/Player';
 import { createEmptyBoard } from '../utils/boardHelpers';
 import { shoot, areAllShipsSunk } from '../services/gameLogic';
 import { ShotResult } from '../models/ShotResult';
+import { placeFleetRandomly } from '../services/shipPlacement';
 
 interface GameContextType {
   gameState: GameState;
@@ -24,17 +25,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
   });
 
   function createPlayers(player1Name: string, player2Name: string) {
+    const board1 = createEmptyBoard();
+    const board2 = createEmptyBoard();
+    
+    // Automatically place ships randomly for both players
+    placeFleetRandomly(board1);
+    placeFleetRandomly(board2);
+
     const player1: Player = {
       id: 'player1',
       name: player1Name,
-      board: createEmptyBoard(),
+      board: board1,
       isReady: false,
     };
 
     const player2: Player = {
       id: 'player2',
       name: player2Name,
-      board: createEmptyBoard(),
+      board: board2,
       isReady: false,
     };
 
