@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getServerUrl } from '../utils/config';
 
 interface TopBarProps {
@@ -10,6 +11,7 @@ interface TopBarProps {
 
 export function TopBar({ onBack, backLabel = 'Voltar', rightText }: TopBarProps) {
   const [showHelp, setShowHelp] = useState(false);
+  const insets = useSafeAreaInsets();
   const serverUrl = getServerUrl();
   const isMultiplayer = !!serverUrl;
   
@@ -17,7 +19,7 @@ export function TopBar({ onBack, backLabel = 'Voltar', rightText }: TopBarProps)
 
   return (
     <>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
         <View style={styles.leftSection}>
           {onBack && (
             <TouchableOpacity style={styles.button} onPress={onBack}>
@@ -119,9 +121,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#16213e',
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingBottom: 10,
     borderBottomWidth: 2,
     borderBottomColor: '#4da6ff',
+    width: '100%',
   },
   leftSection: {
     flex: 1,

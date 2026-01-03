@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, SafeAreaView } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GameProvider, useGameContext } from './src/context/GameContext';
 import { LobbyScreen } from './src/screens/LobbyScreen';
 import { SetupScreen } from './src/screens/SetupScreen';
@@ -26,18 +27,20 @@ function Root() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {renderScreen()}
-      <StatusBar style="auto" />
-    </SafeAreaView>
+      <StatusBar style="light" />
+    </View>
   );
 }
 
 export default function App() {
   return (
-    <GameProvider>
-      <Root />
-    </GameProvider>
+    <SafeAreaProvider>
+      <GameProvider>
+        <Root />
+      </GameProvider>
+    </SafeAreaProvider>
   );
 }
 
