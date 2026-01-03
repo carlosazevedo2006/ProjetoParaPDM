@@ -7,7 +7,7 @@ export class Network {
   async connect(serverUrl: string) {
     return new Promise<void>((resolve, reject) => {
       this.ws = new WebSocket(serverUrl);
-      this.ws.onopen = () => resolve({});
+      this.ws.onopen = () => resolve();
       this.ws.onerror = (e) => reject(e);
       this.ws.onmessage = (ev) => {
         try {

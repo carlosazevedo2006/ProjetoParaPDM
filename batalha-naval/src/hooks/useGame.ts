@@ -84,10 +84,12 @@ export function useGame() {
     const defenderIndex = attackerIndex === 0 ? 1 : 0;
     const defender = gameState.players[defenderIndex];
 
-    const result = shoot(defender.board, targetRow, targetCol);
+    const { result, updatedBoard } = shoot(defender.board, targetRow, targetCol);
+    const updatedDefender: Player = { ...defender, board: updatedBoard };
+    const updatedPlayers = gameState.players.map((p, i) => (i === defenderIndex ? updatedDefender : p));
 
     // Verificar fim de jogo
-    const gameFinished = areAllShipsSunk(defender.board);
+    const gameFinished = areAllShipsSunk(updatedDefender.board);
 
     setGameState(prev => {
       let nextTurn = prev.currentTurnPlayerId;
@@ -99,7 +101,7 @@ export function useGame() {
 
       return {
         ...prev,
-        players: [...prev.players],
+        players: updatedPlayers,
         currentTurnPlayerId: nextTurn,
         phase: gameFinished ? 'finished' : prev.phase,
         winnerId: gameFinished ? attackerId : prev.winnerId,
