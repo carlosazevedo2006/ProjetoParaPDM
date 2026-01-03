@@ -1,20 +1,7 @@
-export type Cell = {
-  row: number;
-  col: number;
+export type ShotOutcome = 'water' | 'hit' | 'sunk';
+
+export type ShotResult = {
+  outcome: ShotOutcome;
   shipId?: string;
-  hit?: boolean;
+  position: { row: number; col: number };
 };
-
-export type Ship = {
-  id: string;
-  size: number;
-  cells: { row: number; col: number }[];
-  hits: number;
-};
-
-export type Board = {
-  cells: Cell[][];
-  ships: Ship[];
-};
-
-export const BOARD_SIZE = 10;

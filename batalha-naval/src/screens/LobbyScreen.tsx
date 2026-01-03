@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useGameContext } from '../context/GameContext';
 
-interface LobbyScreenProps {
-  onStart: () => void;
-}
-
-export function LobbyScreen({ onStart }: LobbyScreenProps) {
+export function LobbyScreen() {
   const [player1Name, setPlayer1Name] = useState('Jogador 1');
   const [player2Name, setPlayer2Name] = useState('Jogador 2');
   const { createPlayers } = useGameContext();
@@ -16,9 +12,7 @@ export function LobbyScreen({ onStart }: LobbyScreenProps) {
       Alert.alert('Erro', 'Por favor, insira o nome dos dois jogadores');
       return;
     }
-
     createPlayers(player1Name.trim(), player2Name.trim());
-    onStart();
   }
 
   return (
@@ -48,14 +42,6 @@ export function LobbyScreen({ onStart }: LobbyScreenProps) {
         <TouchableOpacity style={styles.button} onPress={handleStartGame}>
           <Text style={styles.buttonText}>Iniciar Jogo</Text>
         </TouchableOpacity>
-      </View>
-
-      <View style={styles.infoBox}>
-        <Text style={styles.infoTitle}>ℹ️ Como Jogar:</Text>
-        <Text style={styles.infoText}>• Cada jogador coloca 5 navios no tabuleiro</Text>
-        <Text style={styles.infoText}>• Os navios não podem encostar uns nos outros</Text>
-        <Text style={styles.infoText}>• Dispara alternadamente para afundar a frota inimiga</Text>
-        <Text style={styles.infoText}>• Primeiro a afundar todos os navios vence!</Text>
       </View>
     </View>
   );
@@ -113,23 +99,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  infoBox: {
-    backgroundColor: '#16213e',
-    padding: 15,
-    borderRadius: 10,
-    borderLeftWidth: 4,
-    borderLeftColor: '#4da6ff',
-  },
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#4da6ff',
-    marginBottom: 10,
-  },
-  infoText: {
-    fontSize: 14,
-    color: '#e0e0e0',
-    marginBottom: 5,
   },
 });

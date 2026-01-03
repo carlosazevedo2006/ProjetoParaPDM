@@ -1,7 +1,6 @@
 import { View, StyleSheet, Text } from 'react-native';
-import { Board as BoardModel } from '../models/Board';
+import { Board as BoardModel, BOARD_SIZE } from '../models/Board';
 import { Cell } from './Cell';
-import { BOARD_ROWS } from '../utils/constants';
 
 interface BoardProps {
   board: BoardModel;
@@ -9,13 +8,15 @@ interface BoardProps {
   showShips?: boolean;
 }
 
+const ROW_LABELS = Array.from({ length: BOARD_SIZE }, (_, i) => String.fromCharCode(65 + i)); // A-J
+
 export function Board({ board, onCellPress, showShips = false }: BoardProps) {
   return (
     <View style={styles.container}>
       {/* Column headers (1-10) */}
       <View style={styles.headerRow}>
         <View style={styles.cornerCell} />
-        {Array.from({ length: 10 }, (_, i) => (
+        {Array.from({ length: BOARD_SIZE }, (_, i) => (
           <View key={i} style={styles.headerCell}>
             <Text style={styles.headerText}>{i + 1}</Text>
           </View>
@@ -23,24 +24,20 @@ export function Board({ board, onCellPress, showShips = false }: BoardProps) {
       </View>
 
       {/* Board rows with row labels (A-J) */}
-      {board.grid.map((row, rowIndex) => (
+      {board.cells.map((row, rowIndex) => (
         <View key={rowIndex} style={styles.row}>
           {/* Row label */}
           <View style={styles.headerCell}>
-            <Text style={styles.headerText}>{BOARD_ROWS[rowIndex]}</Text>
+            <Text style={styles.headerText}>{ROW_LABELS[rowIndex]}</Text>
           </View>
-          
+
           {/* Cells */}
           {row.map((cell, colIndex) => (
             <Cell
               key={colIndex}
               cell={cell}
               showShips={showShips}
-              onPress={
-                onCellPress
-                  ? () => onCellPress(rowIndex, colIndex)
-                  : undefined
-              }
+              onPress={onCellPress ? () => onCellPress(rowIndex, colIndex) : undefined}
             />
           ))}
         </View>

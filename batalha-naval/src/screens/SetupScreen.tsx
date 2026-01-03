@@ -2,14 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { Board } from '../components/Board';
 import { useGameContext } from '../context/GameContext';
-import { placeFleetRandomly } from '../services/shipPlacement';
 import { SHIPS_CONFIG } from '../utils/constants';
 
-interface SetupScreenProps {
-  onReady: () => void;
-}
+// Nota: remove a indicação de 'placed' por nome, porque Ship não tem 'name' no modelo atual.
 
-export function SetupScreen({ onReady }: SetupScreenProps) {
+export function SetupScreen() {
   const { gameState, setPlayerReady } = useGameContext();
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
 
@@ -22,18 +19,7 @@ export function SetupScreen({ onReady }: SetupScreenProps) {
   }
 
   const currentPlayer = gameState.players[currentPlayerIndex];
-  const allReady = gameState.players.every(p => p.isReady);
   const allShipsPlaced = currentPlayer.board.ships.length === SHIPS_CONFIG.length;
-
-  function handleRandomPlacement() {
-    const success = placeFleetRandomly(currentPlayer.board);
-
-    if (!success) {
-      Alert.alert('Erro', 'Falha na colocação aleatória');
-    } else {
-      Alert.alert('Sucesso', 'Navios colocados aleatoriamente!');
-    }
-  }
 
   function handleReady() {
     if (!allShipsPlaced) {
@@ -43,7 +29,6 @@ export function SetupScreen({ onReady }: SetupScreenProps) {
 
     setPlayerReady(currentPlayer.id);
 
-    // Se ainda houver jogadores que não colocaram navios
     if (currentPlayerIndex < gameState.players.length - 1) {
       Alert.alert(
         'Próximo Jogador',
@@ -51,12 +36,7 @@ export function SetupScreen({ onReady }: SetupScreenProps) {
         [{ text: 'OK', onPress: () => setCurrentPlayerIndex(currentPlayerIndex + 1) }]
       );
     } else {
-      // Todos colocaram os navios
-      Alert.alert(
-        'Jogo Pronto!',
-        'Todos os jogadores colocaram seus navios. O jogo vai começar!',
-        [{ text: 'Iniciar', onPress: onReady }]
-      );
+      Alert.alert('Jogo Pronto!', 'Todos os jogadores colocaram seus navios. O jogo vai começar!');
     }
   }
 
@@ -72,37 +52,17 @@ export function SetupScreen({ onReady }: SetupScreenProps) {
 
       <View style={styles.shipsInfo}>
         <Text style={styles.shipsTitle}>Frota a colocar:</Text>
-        {SHIPS_CONFIG.map((ship, index) => {
-          const placed = currentPlayer.board.ships.some(s => s.name === ship.name);
-          return (
-            <Text
-              key={index}
-              style={[styles.shipText, placed && styles.shipPlaced]}
-            >
-              {placed ? '✓' : '○'} {ship.name} ({ship.size} células)
-            </Text>
-          );
-        })}
+        {SHIPS_CONFIG.map((ship, index) => (
+          <Text key={index} style={styles.shipText}>
+            • {ship.name} ({ship.size} células)
+          </Text>
+        ))}
       </View>
 
       <Board board={currentPlayer.board} showShips={true} />
 
       <View style={styles.buttons}>
-        <TouchableOpacity
-          style={styles.buttonSecondary}
-          onPress={handleRandomPlacement}
-        >
-          <Text style={styles.buttonText}>🎲 Colocação Aleatória</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.buttonPrimary,
-            !allShipsPlaced && styles.buttonDisabled
-          ]}
-          onPress={handleReady}
-          disabled={!allShipsPlaced}
-        >
+        <TouchableOpacity style={styles.buttonPrimary} onPress={handleReady} disabled={!allShipsPlaced}>
           <Text style={styles.buttonText}>
             {currentPlayerIndex < gameState.players.length - 1 ? 'Próximo Jogador' : 'Iniciar Jogo'}
           </Text>
@@ -164,12 +124,8 @@ const styles = StyleSheet.create({
   },
   shipText: {
     fontSize: 14,
-    color: '#999',
+    color: '#e0e0e0',
     marginBottom: 5,
-  },
-  shipPlaced: {
-    color: '#4da6ff',
-    fontWeight: '600',
   },
   buttons: {
     marginTop: 20,
@@ -181,18 +137,6 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
-  },
-  buttonSecondary: {
-    backgroundColor: '#0f3460',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#4da6ff',
-  },
-  buttonDisabled: {
-    backgroundColor: '#333',
-    opacity: 0.5,
   },
   buttonText: {
     color: '#fff',

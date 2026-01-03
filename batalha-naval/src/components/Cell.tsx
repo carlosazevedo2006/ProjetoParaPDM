@@ -1,5 +1,5 @@
 import { Pressable, View, StyleSheet } from 'react-native';
-import { Cell as CellModel } from '../models/Cell';
+import { Cell as CellModel } from '../models/Board';
 
 interface CellProps {
   cell: CellModel;
@@ -10,15 +10,15 @@ interface CellProps {
 export function Cell({ cell, onPress, showShips = false }: CellProps) {
   let backgroundColor = '#4da6ff'; // água
 
-  if (cell.hit && !cell.hasShip) {
+  if (cell.hit && !cell.shipId) {
     backgroundColor = '#e0e0e0'; // água atingida
   }
 
-  if (cell.hit && cell.hasShip) {
+  if (cell.hit && cell.shipId) {
     backgroundColor = '#ff4d4d'; // acerto
   }
 
-  if (!cell.hit && cell.hasShip && showShips) {
+  if (!cell.hit && cell.shipId && showShips) {
     backgroundColor = '#666'; // navio visível
   }
 

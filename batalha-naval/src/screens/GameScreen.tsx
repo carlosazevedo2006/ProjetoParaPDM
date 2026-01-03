@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Alert, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import { Board } from '../components/Board';
 import { useGameContext } from '../context/GameContext';
+import { ShotResult } from '../models/ShotResult';
 
-interface GameScreenProps {
-  onGameEnd: () => void;
-}
-
-export function GameScreen({ onGameEnd }: GameScreenProps) {
+export function GameScreen() {
   const { gameState, fire } = useGameContext();
-  const [lastShotResult, setLastShotResult] = useState<string>('');
+  const [lastShotResult, setLastShotResult] = useState<ShotResult['outcome'] | ''>('');
 
   if (gameState.players.length < 2) {
     return (
@@ -19,43 +16,31 @@ export function GameScreen({ onGameEnd }: GameScreenProps) {
     );
   }
 
-  const currentPlayer = gameState.players.find(
-    p => p.id === gameState.currentTurnPlayerId
-  );
-
-  const opponent = gameState.players.find(
-    p => p.id !== gameState.currentTurnPlayerId
-  );
+  const currentPlayer = gameState.players.find(p => p.id === gameState.currentTurnPlayerId);
+  const opponent = gameState.players.find(p => p.id !== gameState.currentTurnPlayerId);
 
   if (!currentPlayer || !opponent) {
     return null;
   }
 
   function handleFire(row: number, col: number) {
-    if (!currentPlayer || !opponent) {
-      return;
-    }
-
-    // Verificar se já foi atingida
-    if (opponent.board.grid[row][col].hit) {
+    if (opponent.board.cells[row][col].hit) {
       Alert.alert('Atenção', 'Já disparaste nesta posição!');
       return;
     }
 
     const result = fire(currentPlayer.id, row, col);
-
     if (!result) return;
 
+    setLastShotResult(result.outcome);
+
     let message = '';
-    if (result === 'water') {
+    if (result.outcome === 'water') {
       message = '💦 Água!';
-      setLastShotResult('water');
-    } else if (result === 'hit') {
+    } else if (result.outcome === 'hit') {
       message = '💥 Acertou!';
-      setLastShotResult('hit');
-    } else if (result === 'sunk') {
+    } else if (result.outcome === 'sunk') {
       message = '🔥 Navio Afundado!';
-      setLastShotResult('sunk');
     }
 
     setTimeout(() => {
@@ -63,16 +48,11 @@ export function GameScreen({ onGameEnd }: GameScreenProps) {
     }, 100);
   }
 
-  // Verificar fim de jogo
   useEffect(() => {
     if (gameState.phase === 'finished' && gameState.winnerId) {
       const winner = gameState.players.find(p => p.id === gameState.winnerId);
       setTimeout(() => {
-        Alert.alert(
-          '🎉 Fim de Jogo!',
-          `Vencedor: ${winner?.name}`,
-          [{ text: 'Ver Resultados', onPress: onGameEnd }]
-        );
+        Alert.alert('🎉 Fim de Jogo!', `Vencedor: ${winner?.name}`);
       }, 500);
     }
   }, [gameState.phase]);
@@ -104,34 +84,25 @@ export function GameScreen({ onGameEnd }: GameScreenProps) {
         <Text style={styles.boardSubtitle}>
           Navios: {currentPlayer.board.ships.filter(s => s.hits < s.size).length} / {currentPlayer.board.ships.length}
         </Text>
-        <Board
-          board={currentPlayer.board}
-          showShips={true}
-        />
+        <Board board={currentPlayer.board} showShips={true} />
       </View>
 
       <View style={styles.boardSection}>
         <Text style={styles.boardTitle}>Radar do Inimigo 🎯</Text>
-        <Text style={styles.boardSubtitle}>
-          Toca numa célula para disparar
-        </Text>
-        <Board
-          board={opponent.board}
-          onCellPress={handleFire}
-          showShips={false}
-        />
+        <Text style={styles.boardSubtitle}>Toca numa célula para disparar</Text>
+        <Board board={opponent.board} onCellPress={handleFire} showShips={false} />
       </View>
 
       <View style={styles.statsBox}>
         <Text style={styles.statsTitle}>Estatísticas:</Text>
         <Text style={styles.statsText}>
-          📊 Total de disparos: {opponent.board.grid.flat().filter(c => c.hit).length}
+          📊 Total de disparos: {opponent.board.cells.flat().filter(c => c.hit).length}
         </Text>
         <Text style={styles.statsText}>
-          🎯 Acertos: {opponent.board.grid.flat().filter(c => c.hit && c.hasShip).length}
+          🎯 Acertos: {opponent.board.cells.flat().filter(c => c.hit && c.shipId).length}
         </Text>
         <Text style={styles.statsText}>
-          💦 Água: {opponent.board.grid.flat().filter(c => c.hit && !c.hasShip).length}
+          💦 Água: {opponent.board.cells.flat().filter(c => c.hit && !c.shipId).length}
         </Text>
       </View>
     </ScrollView>
