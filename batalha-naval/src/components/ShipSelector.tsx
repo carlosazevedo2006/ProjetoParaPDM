@@ -14,19 +14,26 @@ export function ShipSelector({ availableShips, selectedShip, onSelectShip }: Shi
     <View style={styles.container}>
       <Text style={styles.title}>Selecione um navio para posicionar:</Text>
       <View style={styles.shipList}>
-        {availableShips.map((shipType) => (
-          <Pressable
-            key={shipType}
-            style={[
-              styles.shipButton,
-              selectedShip === shipType && styles.selectedShip,
-            ]}
-            onPress={() => onSelectShip(shipType)}
-          >
-            <Text style={styles.shipName}>{SHIP_NAMES[shipType]}</Text>
-            <Text style={styles.shipSize}>Tamanho: {SHIP_SIZES[shipType]}</Text>
-          </Pressable>
-        ))}
+        {availableShips.map((shipType) => {
+          const isSelected = selectedShip === shipType;
+          return (
+            <Pressable
+              key={shipType}
+              style={[
+                styles.shipButton,
+                isSelected && styles.selectedShip,
+              ]}
+              onPress={() => onSelectShip(shipType)}
+            >
+              <Text style={[styles.shipName, isSelected && styles.selectedText]}>
+                {SHIP_NAMES[shipType]}
+              </Text>
+              <Text style={[styles.shipSize, isSelected && styles.selectedSubtext]}>
+                Tamanho: {SHIP_SIZES[shipType]}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
@@ -65,5 +72,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginTop: 4,
+  },
+  selectedText: {
+    color: '#FFF',
+  },
+  selectedSubtext: {
+    color: '#E0E0E0',
   },
 });
