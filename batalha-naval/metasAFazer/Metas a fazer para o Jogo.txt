@@ -1,6 +1,0 @@
-- Concluir a base do jogo
-- Fazer o menu e interligar com o jogo
-- Multiplayer Local, Multiplayer à distancia e contra bot
-- Verificar a base do jogo e fazer as alterações necessárias
-- Criar um modo de definições , em que essas definições permitem com que haja opções em especifico para o utilizador: modo claro, escuro, a questão da vibração, estatísticas.
-- Criar a página de personalização do navio
