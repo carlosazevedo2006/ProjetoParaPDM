@@ -302,8 +302,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
   async function connectServer(url: string): Promise<void> {
     setGameState(prev => ({ ...prev, serverUrl: url }));
     
-    // If a network connection already exists, close it
+    // If a network connection already exists, close it properly
     if (networkRef.current) {
+      networkRef.current.disconnect();
       networkRef.current = null;
     }
     
@@ -338,22 +339,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }
 
   async function toggleVibration(): Promise<void> {
-    setGameState(prev => {
-      const newPrefs = {
-        ...prev.preferences,
-        vibrationEnabled: !prev.preferences.vibrationEnabled,
-      };
-      
-      // Persist to AsyncStorage
-      AsyncStorage.setItem('preferences', JSON.stringify(newPrefs)).catch(e => {
-        console.warn('Failed to save preferences', e);
-      });
-      
-      return {
-        ...prev,
-        preferences: newPrefs,
-      };
-    });
+    const newValue = !gameState.preferences.vibrationEnabled;
+    const newPrefs = {
+      ...gameState.preferences,
+      vibrationEnabled: newValue,
+    };
+    
+    // Update state first
+    setGameState(prev => ({
+      ...prev,
+      preferences: newPrefs,
+    }));
+    
+    // Then persist to AsyncStorage
+    try {
+      await AsyncStorage.setItem('preferences', JSON.stringify(newPrefs));
+    } catch (e) {
+      console.warn('Failed to save preferences', e);
+    }
   }
 
   return (

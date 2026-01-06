@@ -27,6 +27,14 @@ export class Network {
     this.ws?.send(JSON.stringify({ type, payload }));
   }
 
+  disconnect() {
+    if (this.ws) {
+      this.ws.close();
+      this.ws = undefined;
+    }
+    this.handlers = {};
+  }
+
   makePlayerId() {
     return `p_${Math.random().toString(36).slice(2, 8)}`;
   }
