@@ -1,7 +1,7 @@
 // Game context for managing game state
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { GameState, Player, Position, Ship, Board, Statistics } from '../types';
+import { GameState, Player, Position, Ship, Statistics } from '../types';
 import { createEmptyBoard, processFireOnBoard, areAllShipsSunk, placeShip, getOpponentBoardView } from '../utils/boardUtils';
 import { getNetwork, resetNetwork } from '../services/network';
 

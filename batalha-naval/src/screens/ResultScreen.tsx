@@ -1,5 +1,5 @@
 // Result screen - game over
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useGame } from '../context/GameContext';
@@ -7,15 +7,17 @@ import { useGame } from '../context/GameContext';
 export default function ResultScreen() {
   const router = useRouter();
   const { gameState, resetGame, myPlayerId, updateStatistics } = useGame();
+  const statisticsUpdated = useRef(false);
 
   useEffect(() => {
-    // Save statistics when game ends
-    if (gameState && gameState.winner !== undefined) {
+    // Save statistics when game ends (only once)
+    if (!statisticsUpdated.current && gameState && gameState.winner !== undefined) {
       const winner = gameState.players[gameState.winner];
       const localPlayerWon = winner?.id === myPlayerId;
       updateStatistics(localPlayerWon);
+      statisticsUpdated.current = true;
     }
-  }, []);
+  }, [gameState, myPlayerId, updateStatistics]);
 
   if (!gameState) {
     return (
@@ -26,7 +28,6 @@ export default function ResultScreen() {
   }
 
   const winner = gameState.winner !== undefined ? gameState.players[gameState.winner] : null;
-  const myPlayerIndex = gameState.players.findIndex(p => p?.id === myPlayerId);
   const iWon = winner?.id === myPlayerId;
   
   const isMultiplayer = gameState.mode === 'multiplayer';
