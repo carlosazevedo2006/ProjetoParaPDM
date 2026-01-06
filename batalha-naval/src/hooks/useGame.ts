@@ -14,6 +14,9 @@ export function useGame() {
     players: [],
     currentTurnPlayerId: '',
     phase: 'lobby',
+    preferences: {
+      vibrationEnabled: true,
+    },
   });
 
   /**
@@ -34,11 +37,12 @@ export function useGame() {
       isReady: false,
     };
 
-    setGameState({
+    setGameState(prev => ({
+      ...prev,
       players: [player1, player2],
       currentTurnPlayerId: player1.id,
       phase: 'setup',
-    });
+    }));
   }
 
   /**
@@ -84,10 +88,10 @@ export function useGame() {
     const defenderIndex = attackerIndex === 0 ? 1 : 0;
     const defender = gameState.players[defenderIndex];
 
-    const result = shoot(defender.board, targetRow, targetCol);
+    const { result, updatedBoard } = shoot(defender.board, targetRow, targetCol);
 
     // Verificar fim de jogo
-    const gameFinished = areAllShipsSunk(defender.board);
+    const gameFinished = areAllShipsSunk(updatedBoard);
 
     setGameState(prev => {
       let nextTurn = prev.currentTurnPlayerId;
@@ -113,11 +117,12 @@ export function useGame() {
    * Reinicia o jogo
    */
   function resetGame() {
-    setGameState({
+    setGameState(prev => ({
       players: [],
       currentTurnPlayerId: '',
       phase: 'lobby',
-    });
+      preferences: prev.preferences,
+    }));
   }
 
   return {

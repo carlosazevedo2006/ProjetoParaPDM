@@ -1,6 +1,10 @@
 import { Player } from './Player';
 
-export type GamePhase = 'lobby' | 'setup' | 'playing' | 'finished';
+export type GamePhase = 'start' | 'playMenu' | 'settings' | 'connect' | 'lobby' | 'setup' | 'playing' | 'finished';
+
+export interface Preferences {
+  vibrationEnabled: boolean;
+}
 
 export interface GameState {
   players: Player[];
@@ -9,4 +13,6 @@ export interface GameState {
   winnerId?: string;
   selfId?: string;
   roomId?: string;
+  preferences: Preferences;
+  serverUrl?: string;
 }

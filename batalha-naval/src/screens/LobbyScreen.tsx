@@ -6,7 +6,7 @@ import { TopBar } from '../components/TopBar';
 export function LobbyScreen() {
   const [player1Name, setPlayer1Name] = useState('Jogador 1');
   const [player2Name, setPlayer2Name] = useState('Jogador 2');
-  const { createPlayers } = useGameContext();
+  const { createPlayers, updatePhase, gameState } = useGameContext();
 
   function handleStartGame() {
     if (!player1Name.trim() || !player2Name.trim()) {
@@ -16,12 +16,24 @@ export function LobbyScreen() {
     createPlayers(player1Name.trim(), player2Name.trim());
   }
 
+  function handleBack() {
+    // If we have a serverUrl, go back to connect screen, otherwise to playMenu
+    if (gameState.serverUrl) {
+      updatePhase('connect');
+    } else {
+      updatePhase('playMenu');
+    }
+  }
+
+  // Determine the mode text based on whether serverUrl is set
+  const modeText = gameState.serverUrl ? 'Multiplayer' : 'Local';
+
   return (
     <View style={styles.container}>
-      <TopBar />
+      <TopBar onBack={handleBack} backLabel="Voltar" rightText={modeText} />
       <View style={styles.content}>
         <Text style={styles.title}>⚓ Batalha Naval ⚓</Text>
-        <Text style={styles.subtitle}>Multiplayer WLAN</Text>
+        <Text style={styles.subtitle}>{modeText}</Text>
 
         <View style={styles.form}>
           <Text style={styles.label}>Nome do Jogador 1:</Text>

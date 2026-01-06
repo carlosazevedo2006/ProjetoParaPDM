@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GameState, GamePhase } from '../models/GameState';
 import { Player } from '../models/Player';
 import { createEmptyBoard } from '../utils/boardHelpers';
@@ -24,6 +25,8 @@ interface GameContextType {
   fire: (attackerId: string, targetRow: number, targetCol: number) => ShotResult | null;
   resetGame: () => void;
   updatePhase: (phase: GamePhase) => void;
+  connectServer: (url: string) => Promise<void>;
+  toggleVibration: () => Promise<void>;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -43,7 +46,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [gameState, setGameState] = useState<GameState>({
     players: [],
     currentTurnPlayerId: '',
-    phase: 'lobby',
+    phase: 'start',
+    preferences: {
+      vibrationEnabled: true,
+    },
   });
 
   const [myPlayerId, setMyPlayerId] = useState<string | undefined>(undefined);
@@ -57,8 +63,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const localSelfNameRef = useRef<string>('');
 
+  // Load preferences from AsyncStorage on mount
   useEffect(() => {
-    if (!multiplayer) return;
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem('preferences');
+        if (stored) {
+          const prefs = JSON.parse(stored);
+          setGameState(prev => ({ ...prev, preferences: prefs }));
+        }
+      } catch (e) {
+        console.warn('Failed to load preferences', e);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    const effectiveUrl = gameState.serverUrl || serverUrl;
+    if (!effectiveUrl) return;
     if (networkRef.current) return;
     const n = new Network();
     networkRef.current = n;
@@ -82,12 +104,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     (async () => {
       try {
-        await n.connect(serverUrl!);
+        await n.connect(effectiveUrl);
       } catch (e) {
         console.warn('Falha ao ligar ao servidor WebSocket', e);
       }
     })();
-  }, [multiplayer, serverUrl]);
+  }, [gameState.serverUrl, serverUrl]);
 
   function createPlayers(player1Name: string, player2Name: string) {
     // IMPORTANTE: o nome no campo "Jogador 1" DESTE dispositivo é o jogador local
@@ -97,7 +119,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     // Store the local player's name for later server state mapping
     localSelfNameRef.current = trimmedPlayer1;
     
-    if (!multiplayer) {
+    const effectiveUrl = gameState.serverUrl || serverUrl;
+    const isMultiplayer = !!effectiveUrl;
+    
+    if (!isMultiplayer) {
       // Em modo local, não há dispositivos separados, então myPlayerId não é necessário
       // mas definimos como player1 por padrão para consistência
       setMyPlayerId(undefined);
@@ -116,11 +141,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
         isReady: false,
       };
 
-      setGameState({
+      setGameState(prev => ({
+        ...prev,
         players: [player1, player2],
         currentTurnPlayerId: player1.id,
         phase: 'setup',
-      });
+      }));
       return;
     }
 
@@ -148,13 +174,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const roomId = makeRoomId(player1Name, player2Name);
     roomIdRef.current = roomId;
 
-    setGameState({
+    setGameState(prev => ({
+      ...prev,
       players: [player1, player2],
       currentTurnPlayerId: player1.id,
       phase: 'setup',
       selfId: selfIdRef.current,
       roomId,
-    });
+    }));
 
     networkRef.current?.emit('JOIN_OR_CREATE', {
       roomId,
@@ -197,7 +224,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         currentTurnPlayerId: allReady ? players[0].id : prev.currentTurnPlayerId,
       };
 
-      if (multiplayer && roomIdRef.current) {
+      const effectiveUrl = prev.serverUrl || serverUrl;
+      if (effectiveUrl && roomIdRef.current) {
         networkRef.current?.emit('PLAYER_READY', {
           roomId: roomIdRef.current,
           playerId,
@@ -236,7 +264,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       };
     });
 
-    if (multiplayer && roomIdRef.current) {
+    const effectiveUrl = gameState.serverUrl || serverUrl;
+    if (effectiveUrl && roomIdRef.current) {
       networkRef.current?.emit('FIRE', {
         roomId: roomIdRef.current,
         attackerId,
@@ -249,19 +278,74 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }
 
   function resetGame() {
-    if (multiplayer && roomIdRef.current) {
+    const effectiveUrl = gameState.serverUrl || serverUrl;
+    if (effectiveUrl && roomIdRef.current) {
       networkRef.current?.emit('RESET', { roomId: roomIdRef.current });
     }
-    setGameState({
+    setGameState(prev => ({
       players: [],
       currentTurnPlayerId: '',
-      phase: 'lobby',
-    });
+      phase: 'start',
+      preferences: prev.preferences,
+    }));
     setMyPlayerId(undefined);
   }
 
   function updatePhase(phase: GamePhase) {
     setGameState(prev => ({ ...prev, phase }));
+  }
+
+  async function connectServer(url: string): Promise<void> {
+    setGameState(prev => ({ ...prev, serverUrl: url }));
+    
+    // If a network connection already exists, close it
+    if (networkRef.current) {
+      networkRef.current = null;
+    }
+    
+    // Create new network connection
+    const n = new Network();
+    networkRef.current = n;
+    
+    n.on('SERVER_STATE', (state: GameState) => {
+      setGameState(state);
+      
+      if (localSelfNameRef.current && state.players.length > 0) {
+        const localNameNormalized = normalizeName(localSelfNameRef.current);
+        const matchingPlayer = state.players.find(
+          p => normalizeName(p.name) === localNameNormalized
+        );
+        if (matchingPlayer) {
+          setMyPlayerId(matchingPlayer.id);
+        }
+      }
+    });
+    
+    try {
+      await n.connect(url);
+    } catch (e) {
+      console.warn('Falha ao ligar ao servidor WebSocket', e);
+      throw e;
+    }
+  }
+
+  async function toggleVibration(): Promise<void> {
+    setGameState(prev => {
+      const newPrefs = {
+        ...prev.preferences,
+        vibrationEnabled: !prev.preferences.vibrationEnabled,
+      };
+      
+      // Persist to AsyncStorage
+      AsyncStorage.setItem('preferences', JSON.stringify(newPrefs)).catch(e => {
+        console.warn('Failed to save preferences', e);
+      });
+      
+      return {
+        ...prev,
+        preferences: newPrefs,
+      };
+    });
   }
 
   return (
@@ -274,6 +358,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         fire,
         resetGame,
         updatePhase,
+        connectServer,
+        toggleVibration,
       }}
     >
       {children}
