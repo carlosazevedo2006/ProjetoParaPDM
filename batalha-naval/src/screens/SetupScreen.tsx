@@ -7,7 +7,7 @@ import { Board } from '../components/Board';
 import { ShipSelector } from '../components/ShipSelector';
 import { ShipType, SHIP_SIZES, Position, Ship } from '../types';
 import { canPlaceShip, generateShipPositions } from '../utils/boardUtils';
-import { v4 as uuidv4 } from 'react-native-uuid';
+import uuid from 'react-native-uuid';
 
 const REQUIRED_SHIPS: ShipType[] = ['carrier', 'battleship', 'cruiser', 'submarine', 'destroyer'];
 
@@ -57,7 +57,7 @@ export default function SetupScreen() {
     }
 
     const ship: Ship = {
-      id: uuidv4() as string,
+      id: uuid.v4() as string,
       type: selectedShip,
       size,
       positions,
