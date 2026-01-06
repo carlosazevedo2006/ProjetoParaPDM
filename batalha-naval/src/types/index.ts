@@ -52,6 +52,7 @@ export type NetworkMessage =
   | { type: 'FIRE'; position: Position }
   | { type: 'RESET' }
   | { type: 'SERVER_STATE'; gameState: GameState }
+  | { type: 'PLAYER_ASSIGNED'; playerId: string }
   | { type: 'ERROR'; message: string }
   | { type: 'CONNECTION_ERROR'; message: string }
   | { type: 'DISCONNECT'; message: string };

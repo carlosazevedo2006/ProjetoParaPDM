@@ -7,7 +7,7 @@ import Constants from 'expo-constants';
 
 export default function MultiplayerConnectScreen() {
   const router = useRouter();
-  const { connectToServer, connectionStatus, testConnection } = useGame();
+  const { connectToServer, connectionStatus, testConnection, joinOrCreateRoom } = useGame();
   
   const defaultServerUrl = Constants.expoConfig?.extra?.serverUrl || 'ws://192.168.1.100:3000';
   
@@ -50,7 +50,13 @@ export default function MultiplayerConnectScreen() {
 
     try {
       await connectToServer(serverUrl);
-      router.push('/lobby' as any);
+      // After connecting, join the room
+      joinOrCreateRoom(roomId, playerName);
+      // Navigate to lobby with params
+      router.push({
+        pathname: '/lobby',
+        params: { roomId, playerName }
+      } as any);
     } catch (error) {
       Alert.alert('Erro de Conexão', 'Não foi possível conectar ao servidor. Verifique se o servidor está rodando e o endereço IP está correto.');
     }

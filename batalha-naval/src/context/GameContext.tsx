@@ -178,6 +178,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         console.log('[GameContext] Received message:', message.type);
         
         switch (message.type) {
+          case 'PLAYER_ASSIGNED':
+            setMyPlayerId(message.playerId);
+            console.log('[GameContext] My player ID:', message.playerId);
+            break;
+            
           case 'SERVER_STATE':
             setGameState(message.gameState);
             setConnectionStatus('connected');
