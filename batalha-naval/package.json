@@ -13,9 +13,9 @@
     "expo": "~54.0.30",
     "expo-router": "~6.0.21",
     "expo-status-bar": "~3.0.9",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "react-native": "0.76.x",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.76.9",
     "react-native-safe-area-context": "~5.6.0"
   },
   "devDependencies": {
