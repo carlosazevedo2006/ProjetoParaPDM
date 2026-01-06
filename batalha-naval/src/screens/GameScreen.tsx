@@ -8,7 +8,7 @@ import { Position } from '../types';
 
 export default function GameScreen() {
   const router = useRouter();
-  const { gameState, myPlayerId, isMyTurn, fireAtPosition, connectionStatus } = useGame();
+  const { gameState, myPlayerId, isMyTurn, fireAtPosition, connectionStatus, resetGame } = useGame();
 
   if (!gameState) {
     return (
@@ -53,12 +53,35 @@ export default function GameScreen() {
     fireAtPosition(position);
   };
 
+  const handleExitGame = () => {
+    Alert.alert(
+      'Sair do Jogo',
+      'Tens certeza que desejas sair? O jogo será encerrado.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Sair', 
+          style: 'destructive',
+          onPress: () => {
+            resetGame();
+            router.replace('/' as any);
+          }
+        }
+      ]
+    );
+  };
+
   const isMultiplayer = gameState.mode === 'multiplayer';
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>⚓ Batalha Naval</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>⚓ Batalha Naval</Text>
+          <Pressable style={styles.exitButton} onPress={handleExitGame}>
+            <Text style={styles.exitButtonText}>🚪 Sair</Text>
+          </Pressable>
+        </View>
 
         {/* Connection status for multiplayer */}
         {isMultiplayer && (
@@ -171,13 +194,32 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 40,
+    marginBottom: 20,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#FFF',
+    flex: 1,
     textAlign: 'center',
-    marginTop: 40,
-    marginBottom: 20,
+  },
+  exitButton: {
+    backgroundColor: '#d9534f',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 8,
+    position: 'absolute',
+    right: 0,
+  },
+  exitButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   statusBar: {
     padding: 10,

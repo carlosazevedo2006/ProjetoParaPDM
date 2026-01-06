@@ -37,6 +37,13 @@ export interface Player {
   ready: boolean;
 }
 
+export interface Statistics {
+  gamesPlayed: number;
+  wins: number;
+  losses: number;
+  winRate: number; // calculated automatically
+}
+
 export interface GameState {
   roomId: string;
   players: [Player | null, Player | null];
@@ -44,6 +51,7 @@ export interface GameState {
   phase: 'setup' | 'playing' | 'finished';
   winner?: 0 | 1;
   mode: 'local' | 'multiplayer';
+  statistics?: Statistics;
 }
 
 export type NetworkMessage =
