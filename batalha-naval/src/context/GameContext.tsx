@@ -87,7 +87,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     // O servidor envia o estado autoritativo. Substituímos localmente.
     n.on('SERVER_STATE', (state: GameState) => {
-      setGameState(state);
+      setGameState(prev => ({
+        ...state,
+        preferences: prev.preferences, // Preserve local preferences
+        serverUrl: prev.serverUrl, // Preserve local serverUrl
+      }));
       
       // When server state arrives, re-map myPlayerId based on our local name
       // Use case-insensitive matching since player names might have different casing
@@ -308,7 +312,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     networkRef.current = n;
     
     n.on('SERVER_STATE', (state: GameState) => {
-      setGameState(state);
+      setGameState(prev => ({
+        ...state,
+        preferences: prev.preferences, // Preserve local preferences
+        serverUrl: prev.serverUrl, // Preserve local serverUrl
+      }));
       
       if (localSelfNameRef.current && state.players.length > 0) {
         const localNameNormalized = normalizeName(localSelfNameRef.current);

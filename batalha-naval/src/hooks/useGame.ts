@@ -101,9 +101,14 @@ export function useGame() {
         nextTurn = prev.players[defenderIndex].id;
       }
 
+      // Update the defender's board with the shot result
+      const updatedPlayers = prev.players.map((p, i) => 
+        i === defenderIndex ? { ...p, board: updatedBoard } : p
+      );
+
       return {
         ...prev,
-        players: [...prev.players],
+        players: updatedPlayers,
         currentTurnPlayerId: nextTurn,
         phase: gameFinished ? 'finished' : prev.phase,
         winnerId: gameFinished ? attackerId : prev.winnerId,

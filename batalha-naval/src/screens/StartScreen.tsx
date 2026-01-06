@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, BackHandler } from 'react-native';
 import { useGameContext } from '../context/GameContext';
 import { TopBar } from '../components/TopBar';
