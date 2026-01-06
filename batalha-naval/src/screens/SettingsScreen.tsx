@@ -6,7 +6,7 @@ import { useGame } from '../context/GameContext';
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { gameState, clearStatistics } = useGame();
+  const { statistics, clearStatistics } = useGame();
 
   const handleClearStatistics = () => {
     Alert.alert(
@@ -43,28 +43,28 @@ export default function SettingsScreen() {
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>Jogos Jogados</Text>
               <Text style={styles.statValue}>
-                {gameState?.statistics?.gamesPlayed || 0}
+                {statistics.gamesPlayed}
               </Text>
             </View>
             
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>Vitórias</Text>
               <Text style={styles.statValue}>
-                {gameState?.statistics?.wins || 0}
+                {statistics.wins}
               </Text>
             </View>
             
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>Derrotas</Text>
               <Text style={styles.statValue}>
-                {gameState?.statistics?.losses || 0}
+                {statistics.losses}
               </Text>
             </View>
             
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>Taxa de Vitória</Text>
               <Text style={styles.statValue}>
-                {gameState?.statistics?.winRate || 0}%
+                {statistics.winRate}%
               </Text>
             </View>
           </View>

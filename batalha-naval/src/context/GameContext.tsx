@@ -10,6 +10,7 @@ interface GameContextType {
   myPlayerId: string | null;
   isMyTurn: boolean;
   connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
+  statistics: Statistics;
   
   // Local game actions
   startLocalGame: () => void;
@@ -36,6 +37,12 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
+  const [statistics, setStatistics] = useState<Statistics>({
+    gamesPlayed: 0,
+    wins: 0,
+    losses: 0,
+    winRate: 0
+  });
 
   // Initialize local game
   const startLocalGame = useCallback(() => {
@@ -61,10 +68,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       currentTurn: 0,
       phase: 'setup',
       mode: 'local',
+      statistics,
     });
     
     setMyPlayerId('player1');
-  }, []);
+  }, [statistics]);
 
   // Place ship on board
   const placeShipOnBoard = useCallback((playerIndex: 0 | 1, ship: Ship) => {
@@ -253,16 +261,18 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       const stored = await AsyncStorage.getItem('statistics');
       if (stored) {
         const stats = JSON.parse(stored);
+        setStatistics(stats);
+        // Also update gameState if it exists
         setGameState(prev => prev ? { ...prev, statistics: stats } : null);
       } else {
-        // Initialize with zeros
+        // Initialize with zeros (already done in state initialization)
         const defaultStats: Statistics = {
           gamesPlayed: 0,
           wins: 0,
           losses: 0,
           winRate: 0
         };
-        setGameState(prev => prev ? { ...prev, statistics: defaultStats } : null);
+        await AsyncStorage.setItem('statistics', JSON.stringify(defaultStats));
       }
     } catch (e) {
       console.warn('Failed to load statistics', e);
@@ -271,17 +281,17 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   // Update statistics after each game
   const updateStatistics = useCallback(async (won: boolean) => {
-    const current = gameState?.statistics || { gamesPlayed: 0, wins: 0, losses: 0, winRate: 0 };
     const updated: Statistics = {
-      gamesPlayed: current.gamesPlayed + 1,
-      wins: won ? current.wins + 1 : current.wins,
-      losses: won ? current.losses : current.losses + 1,
+      gamesPlayed: statistics.gamesPlayed + 1,
+      wins: won ? statistics.wins + 1 : statistics.wins,
+      losses: won ? statistics.losses : statistics.losses + 1,
       winRate: 0 // will be calculated below
     };
     updated.winRate = updated.gamesPlayed > 0 
       ? Math.round((updated.wins / updated.gamesPlayed) * 100) 
       : 0;
     
+    setStatistics(updated);
     setGameState(prev => prev ? { ...prev, statistics: updated } : null);
     
     try {
@@ -289,7 +299,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn('Failed to save statistics', e);
     }
-  }, [gameState?.statistics]);
+  }, [statistics]);
 
   // Clear statistics
   const clearStatistics = useCallback(async () => {
@@ -299,6 +309,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       losses: 0,
       winRate: 0
     };
+    setStatistics(resetStats);
     setGameState(prev => prev ? { ...prev, statistics: resetStats } : null);
     try {
       await AsyncStorage.setItem('statistics', JSON.stringify(resetStats));
@@ -329,6 +340,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     myPlayerId,
     isMyTurn,
     connectionStatus,
+    statistics,
     startLocalGame,
     placeShipOnBoard,
     fireAtPosition,
