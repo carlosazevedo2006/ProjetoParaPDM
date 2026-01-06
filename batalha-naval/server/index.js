@@ -232,24 +232,6 @@ wss.on('connection', (ws) => {
           
           broadcastGameState(room);
           break;
-            };
-            
-            room.clients.push({ ws, playerId: player2.id });
-            room.gameState.players[1] = player2;
-            currentRoom = room;
-            playerIndex = 1;
-            
-            console.log(`✅ Player 2 joined room: ${roomId}`);
-          } else {
-            ws.send(JSON.stringify({
-              type: 'ERROR',
-              message: 'Room is full'
-            }));
-            return;
-          }
-          
-          broadcastGameState(room);
-          break;
         }
         
         case 'PLAYER_READY': {
