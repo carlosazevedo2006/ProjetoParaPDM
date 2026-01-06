@@ -43,6 +43,10 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "serverUrl": "ws://192.168.1.100:3000",
+      "roomSalt": "bn"
     }
   }
 }
