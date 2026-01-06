@@ -1,12 +1,21 @@
 // Result screen - game over
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useGame } from '../context/GameContext';
 
 export default function ResultScreen() {
   const router = useRouter();
-  const { gameState, resetGame, myPlayerId } = useGame();
+  const { gameState, resetGame, myPlayerId, updateStatistics } = useGame();
+
+  useEffect(() => {
+    // Save statistics when game ends
+    if (gameState && gameState.winner !== undefined) {
+      const winner = gameState.players[gameState.winner];
+      const localPlayerWon = winner?.id === myPlayerId;
+      updateStatistics(localPlayerWon);
+    }
+  }, []);
 
   if (!gameState) {
     return (

@@ -1,6 +1,7 @@
 // Game context for managing game state
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { GameState, Player, Position, Ship, Board } from '../types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GameState, Player, Position, Ship, Board, Statistics } from '../types';
 import { createEmptyBoard, processFireOnBoard, areAllShipsSunk, placeShip, getOpponentBoardView } from '../utils/boardUtils';
 import { getNetwork, resetNetwork } from '../services/network';
 
@@ -22,6 +23,11 @@ interface GameContextType {
   joinOrCreateRoom: (roomId: string, playerName: string) => void;
   disconnectFromServer: () => void;
   testConnection: (serverUrl: string) => Promise<boolean>;
+  
+  // Statistics actions
+  updateStatistics: (won: boolean) => Promise<void>;
+  clearStatistics: () => Promise<void>;
+  loadStatistics: () => Promise<void>;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -241,10 +247,75 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Load statistics from AsyncStorage
+  const loadStatistics = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem('statistics');
+      if (stored) {
+        const stats = JSON.parse(stored);
+        setGameState(prev => prev ? { ...prev, statistics: stats } : null);
+      } else {
+        // Initialize with zeros
+        const defaultStats: Statistics = {
+          gamesPlayed: 0,
+          wins: 0,
+          losses: 0,
+          winRate: 0
+        };
+        setGameState(prev => prev ? { ...prev, statistics: defaultStats } : null);
+      }
+    } catch (e) {
+      console.warn('Failed to load statistics', e);
+    }
+  }, []);
+
+  // Update statistics after each game
+  const updateStatistics = useCallback(async (won: boolean) => {
+    const current = gameState?.statistics || { gamesPlayed: 0, wins: 0, losses: 0, winRate: 0 };
+    const updated: Statistics = {
+      gamesPlayed: current.gamesPlayed + 1,
+      wins: won ? current.wins + 1 : current.wins,
+      losses: won ? current.losses : current.losses + 1,
+      winRate: 0 // will be calculated below
+    };
+    updated.winRate = updated.gamesPlayed > 0 
+      ? Math.round((updated.wins / updated.gamesPlayed) * 100) 
+      : 0;
+    
+    setGameState(prev => prev ? { ...prev, statistics: updated } : null);
+    
+    try {
+      await AsyncStorage.setItem('statistics', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Failed to save statistics', e);
+    }
+  }, [gameState?.statistics]);
+
+  // Clear statistics
+  const clearStatistics = useCallback(async () => {
+    const resetStats: Statistics = {
+      gamesPlayed: 0,
+      wins: 0,
+      losses: 0,
+      winRate: 0
+    };
+    setGameState(prev => prev ? { ...prev, statistics: resetStats } : null);
+    try {
+      await AsyncStorage.setItem('statistics', JSON.stringify(resetStats));
+    } catch (e) {
+      console.warn('Failed to clear statistics', e);
+    }
+  }, []);
+
   // Determine if it's my turn
   const isMyTurn = gameState?.mode === 'multiplayer' 
     ? gameState.players[gameState.currentTurn]?.id === myPlayerId
     : true; // In local mode, always allow actions
+
+  // Load statistics on mount
+  useEffect(() => {
+    loadStatistics();
+  }, [loadStatistics]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -267,6 +338,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     joinOrCreateRoom,
     disconnectFromServer,
     testConnection,
+    updateStatistics,
+    clearStatistics,
+    loadStatistics,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
