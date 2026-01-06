@@ -1,0 +1,20 @@
+{
+  "name": "batalha-naval-server",
+  "version": "1.0.0",
+  "description": "WebSocket server for Batalha Naval multiplayer game",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": ["websocket", "battleship", "game", "multiplayer"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.18.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

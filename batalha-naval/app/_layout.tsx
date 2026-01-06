@@ -4,21 +4,24 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { GameProvider } from '../src/context/GameContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <GameProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="multiplayer-connect" options={{ headerShown: false }} />
+          <Stack.Screen name="lobby" options={{ headerShown: false }} />
+          <Stack.Screen name="setup" options={{ headerShown: false }} />
+          <Stack.Screen name="game" options={{ headerShown: false }} />
+          <Stack.Screen name="result" options={{ headerShown: false }} />
+        </Stack>
+        <StatusBar style="light" />
+      </ThemeProvider>
+    </GameProvider>
   );
 }
