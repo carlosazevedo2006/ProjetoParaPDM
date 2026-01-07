@@ -45,7 +45,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "serverUrl": "ws://192.168.1.100:3000",
+      "serverUrl": "ws://192.168.1.69:3000",
       "roomSalt": "bn"
     }
   }

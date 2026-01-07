@@ -73,7 +73,7 @@ node -e "require('os').networkInterfaces()['Wi-Fi']?.forEach(i => i.family === '
 2. **Abra o app** em cada dispositivo móvel
 3. **Selecione "Multiplayer Online"**
 4. **Digite o endereço do servidor** no formato: `ws://SEU-IP:3000`
-   - Exemplo: `ws://192.168.1.100:3000`
+   - Exemplo: `ws://192.168.1.69:3000`
 5. **Digite o mesmo ID de sala** em ambos os dispositivos
 6. **Digite seu nome** e clique em "Conectar"
 

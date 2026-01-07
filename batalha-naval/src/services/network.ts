@@ -11,7 +11,7 @@ export class Network {
   private reconnectDelay = 2000;
   private serverUrl: string;
   private shouldReconnect = true;
-  private connectionTimeout: NodeJS.Timeout | null = null;
+  private connectionTimeout: number | null = null;
 
   constructor(serverUrl: string) {
     this.serverUrl = serverUrl;

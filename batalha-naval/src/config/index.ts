@@ -4,7 +4,7 @@
 
 // Default server URL
 // In production, this should be updated or configured via environment variables
-export const DEFAULT_SERVER_URL = 'ws://192.168.1.100:3000';
+export const DEFAULT_SERVER_URL = 'ws://192.168.1.69:3000';
 
 // Can be overridden by environment variables
 export const getServerUrl = (): string => {

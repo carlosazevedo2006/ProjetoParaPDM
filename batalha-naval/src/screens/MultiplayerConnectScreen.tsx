@@ -1,15 +1,15 @@
 // Multiplayer connect screen
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useGame } from '../context/GameContext';
 import Constants from 'expo-constants';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useGame } from '../context/GameContext';
 
 export default function MultiplayerConnectScreen() {
   const router = useRouter();
   const { connectToServer, connectionStatus, testConnection, joinOrCreateRoom } = useGame();
   
-  const defaultServerUrl = Constants.expoConfig?.extra?.serverUrl || 'ws://192.168.1.100:3000';
+  const defaultServerUrl = Constants.expoConfig?.extra?.serverUrl || 'ws://192.168.1.69:3000';
   
   const [serverUrl, setServerUrl] = useState(defaultServerUrl);
   const [roomId, setRoomId] = useState('');
@@ -103,13 +103,13 @@ export default function MultiplayerConnectScreen() {
             style={styles.input}
             value={serverUrl}
             onChangeText={setServerUrl}
-            placeholder="ws://192.168.1.100:3000"
+            placeholder="ws://192.168.1.69:3000"
             placeholderTextColor="#999"
             autoCapitalize="none"
             autoCorrect={false}
           />
           <Text style={styles.hint}>
-            Exemplo: ws://192.168.1.100:3000{'\n'}
+            Exemplo: ws://192.168.1.69:3000{'\n'}
             Substitua pelo IP do computador com o servidor
           </Text>
         </View>
