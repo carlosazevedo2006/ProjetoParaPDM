@@ -1,7 +1,7 @@
 // Game context for managing game state
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { GameState, Player, Position, Ship, Statistics } from '../types';
+import { GameState, Player, Position, Ship, Statistics, NetworkMessage } from '../types';
 import { createEmptyBoard, processFireOnBoard, areAllShipsSunk, placeShip, getOpponentBoardView } from '../utils/boardUtils';
 import { getNetwork, resetNetwork } from '../services/network';
 
@@ -292,7 +292,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       }, 10000);
 
       // Send room creation request
-      network.send({ type: 'CREATE_ROOM' } as any);
+      const createRoomMessage: NetworkMessage = { type: 'CREATE_ROOM' };
+      network.send(createRoomMessage);
     });
   }, []);
 
@@ -376,10 +377,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       }, 10000);
 
       // Send join room request
-      network.send({ 
+      const joinRoomMessage: NetworkMessage = { 
         type: 'JOIN_ROOM', 
         payload: { code } 
-      } as any);
+      };
+      network.send(joinRoomMessage);
     });
   }, []);
 
