@@ -5,6 +5,8 @@ import { useRouter } from 'expo-router';
 import { useGame } from '../context/GameContext';
 import { Board } from '../components/Board';
 import { Position } from '../types';
+import { Colors } from '../styles/colors';
+import { Typography, Spacing, BorderRadius, Shadows } from '../styles/common';
 
 export default function GameScreen() {
   const router = useRouter();
@@ -155,19 +157,19 @@ export default function GameScreen() {
         <View style={styles.legend}>
           <Text style={styles.legendTitle}>Legenda:</Text>
           <View style={styles.legendItem}>
-            <View style={[styles.legendColor, { backgroundColor: '#87CEEB' }]} />
+            <View style={[styles.legendColor, { backgroundColor: Colors.water }]} />
             <Text style={styles.legendText}>Água</Text>
           </View>
           <View style={styles.legendItem}>
-            <View style={[styles.legendColor, { backgroundColor: '#4A90E2' }]} />
+            <View style={[styles.legendColor, { backgroundColor: Colors.shipHealthy }]} />
             <Text style={styles.legendText}>Seu navio</Text>
           </View>
           <View style={styles.legendItem}>
-            <View style={[styles.legendColor, { backgroundColor: '#FF4444' }]} />
+            <View style={[styles.legendColor, { backgroundColor: Colors.shipHit }]} />
             <Text style={styles.legendText}>✕ Acerto</Text>
           </View>
           <View style={styles.legendItem}>
-            <View style={[styles.legendColor, { backgroundColor: '#666666' }]} />
+            <View style={[styles.legendColor, { backgroundColor: Colors.waterHit }]} />
             <Text style={styles.legendText}>○ Erro</Text>
           </View>
         </View>
@@ -188,10 +190,10 @@ export default function GameScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E3A5F',
+    backgroundColor: Colors.bgDark,
   },
   content: {
-    padding: 20,
+    padding: Spacing.lg,
     paddingBottom: 40,
   },
   header: {
@@ -204,50 +206,52 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     flex: 1,
     textAlign: 'center',
   },
   exitButton: {
-    backgroundColor: '#d9534f',
+    backgroundColor: Colors.error,
     paddingHorizontal: 15,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     position: 'absolute',
     right: 0,
+    ...Shadows.small,
   },
   exitButtonText: {
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontSize: 14,
     fontWeight: 'bold',
   },
   statusBar: {
     padding: 10,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
     marginBottom: 15,
   },
   statusText: {
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontSize: 14,
     fontWeight: 'bold',
   },
   turnIndicator: {
     padding: 20,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     alignItems: 'center',
     marginBottom: 20,
     borderWidth: 3,
-    borderColor: '#FFF',
+    borderColor: Colors.textPrimary,
+    ...Shadows.medium,
   },
   turnText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
   },
   turnSubtext: {
     fontSize: 14,
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginTop: 5,
   },
   infoContainer: {
@@ -257,18 +261,21 @@ const styles = StyleSheet.create({
   },
   infoBox: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 15,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   infoLabel: {
     fontSize: 12,
-    color: '#87CEEB',
+    color: Colors.info,
     marginBottom: 5,
+    fontWeight: '600',
   },
   infoValue: {
     fontSize: 16,
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontWeight: 'bold',
   },
   boardSection: {
@@ -277,13 +284,13 @@ const styles = StyleSheet.create({
   boardTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: 5,
   },
   boardSubtitle: {
     fontSize: 14,
-    color: '#87CEEB',
+    color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: 15,
   },
@@ -291,15 +298,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   legend: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 15,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     marginTop: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   legendTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 10,
   },
   legendItem: {
@@ -313,29 +322,29 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginRight: 10,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: Colors.borderDark,
   },
   legendText: {
     fontSize: 14,
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
   },
   warningBox: {
-    backgroundColor: 'rgba(244, 67, 54, 0.3)',
+    backgroundColor: 'rgba(244, 67, 54, 0.2)',
     padding: 15,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     marginTop: 20,
     borderWidth: 2,
-    borderColor: '#F44336',
+    borderColor: Colors.error,
   },
   warningText: {
     fontSize: 16,
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontWeight: 'bold',
     textAlign: 'center',
   },
   errorText: {
     fontSize: 18,
-    color: '#FF4444',
+    color: Colors.error,
     textAlign: 'center',
     marginTop: 50,
   },

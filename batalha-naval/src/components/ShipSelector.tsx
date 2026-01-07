@@ -2,6 +2,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { ShipType, SHIP_SIZES, SHIP_NAMES } from '../types';
+import { Colors } from '../styles/colors';
+import { Spacing, BorderRadius } from '../styles/common';
 
 interface ShipSelectorProps {
   availableShips: ShipType[];
@@ -44,39 +46,46 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   title: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: 10,
-    color: '#333',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    
+    // Adicionar sombra para melhor legibilidade
+    textShadowColor: Colors.shadowDark,
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   shipList: {
     gap: 10,
   },
   shipButton: {
-    padding: 12,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 8,
+    padding: 15,
+    backgroundColor: Colors.bgMedium,
+    borderRadius: BorderRadius.md,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: Colors.borderLight,
   },
   selectedShip: {
-    backgroundColor: '#4A90E2',
-    borderColor: '#2E5C8A',
+    backgroundColor: Colors.primaryFaded,
+    borderColor: Colors.primary,
+    borderWidth: 2,
   },
   shipName: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: Colors.textPrimary,
   },
   shipSize: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 14,
+    color: Colors.textMuted,
     marginTop: 4,
   },
   selectedText: {
-    color: '#FFF',
+    color: Colors.textPrimary,
   },
   selectedSubtext: {
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
   },
 });

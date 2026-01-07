@@ -8,6 +8,8 @@ import { ShipSelector } from '../components/ShipSelector';
 import { ShipType, SHIP_SIZES, Position, Ship } from '../types';
 import { canPlaceShip, generateShipPositions } from '../utils/boardUtils';
 import uuid from 'react-native-uuid';
+import { Colors } from '../styles/colors';
+import { Typography, Buttons, Spacing, BorderRadius, Shadows } from '../styles/common';
 
 const REQUIRED_SHIPS: ShipType[] = ['carrier', 'battleship', 'cruiser', 'submarine', 'destroyer'];
 
@@ -153,91 +155,89 @@ export default function SetupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E3A5F',
+    backgroundColor: Colors.bgDark,
   },
   content: {
-    padding: 20,
+    padding: Spacing.lg,
     paddingBottom: 40,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginTop: 40,
     marginBottom: 20,
   },
   infoBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 15,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     marginBottom: 20,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   infoText: {
     fontSize: 16,
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontWeight: 'bold',
   },
   controls: {
     marginBottom: 20,
   },
   orientationButton: {
-    backgroundColor: '#4A90E2',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
+    ...Buttons.primary,
+    ...Shadows.medium,
   },
   orientationButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    ...Typography.buttonText,
   },
   boardContainer: {
     alignItems: 'center',
     marginVertical: 20,
   },
   progressContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 15,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     marginVertical: 20,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   progressText: {
     fontSize: 16,
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontWeight: 'bold',
   },
   readyButton: {
-    backgroundColor: '#4CAF50',
-    padding: 20,
-    borderRadius: 8,
-    alignItems: 'center',
+    ...Buttons.success,
+    paddingVertical: 20,
     marginVertical: 10,
   },
   readyButtonText: {
-    color: '#FFF',
+    color: Colors.textOnPrimary,
     fontSize: 20,
     fontWeight: 'bold',
   },
   waitingBox: {
-    backgroundColor: 'rgba(255, 165, 0, 0.3)',
+    backgroundColor: 'rgba(240, 173, 78, 0.2)',
     padding: 20,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
     marginVertical: 10,
     borderWidth: 2,
-    borderColor: '#FFA500',
+    borderColor: Colors.warning,
   },
   waitingText: {
     fontSize: 16,
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontWeight: 'bold',
   },
   errorText: {
     fontSize: 18,
-    color: '#FF4444',
+    color: Colors.error,
     textAlign: 'center',
   },
 });
