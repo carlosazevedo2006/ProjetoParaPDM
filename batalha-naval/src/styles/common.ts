@@ -1,14 +1,67 @@
+/**
+ * ============================================
+ * COMMON - ESTILOS COMUNS REUTILIZÁVEIS
+ * ============================================
+ * 
+ * Este ficheiro centraliza todos os estilos reutilizáveis da aplicação,
+ * promovendo consistência visual e reduzindo duplicação de código.
+ * 
+ * COMPONENTES INCLUÍDOS:
+ * - Typography: Estilos de texto (títulos, corpo, botões)
+ * - Buttons: Estilos de botões (primário, secundário, sucesso, erro)
+ * - Containers: Layouts e cards
+ * - Inputs: Campos de entrada
+ * - Spacing: Constantes de espaçamento
+ * - BorderRadius: Raios de borda padronizados
+ * - Shadows: Sombras para elevação
+ * 
+ * FILOSOFIA DE DESIGN:
+ * - Design System consistente em toda a aplicação
+ * - Componentes atómicos reutilizáveis
+ * - Facilita manutenção e evolução do design
+ * - Reduz tamanho do código e bugs de estilo
+ * 
+ * USO:
+ * ```typescript
+ * import { Typography, Buttons, Containers } from '../styles/common';
+ * 
+ * <View style={Containers.screen}>
+ *   <Text style={Typography.title}>Batalha Naval</Text>
+ *   <TouchableOpacity style={Buttons.primary}>
+ *     <Text style={Typography.buttonText}>Jogar</Text>
+ *   </TouchableOpacity>
+ * </View>
+ * ```
+ * 
+ * @author Carlos Azevedo
+ * @date 2026
+ */
 import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
 import { Colors } from './colors';
 
-/**
- * Estilos comuns reutilizáveis
- * Promove consistência e reduz duplicação
- */
+// ============================================
+// TYPOGRAPHY - Estilos de Texto
+// ============================================
 
-// === TYPOGRAPHY ===
+/**
+ * Estilos de tipografia padronizados
+ * 
+ * Define hierarquia visual clara através de tamanhos e pesos de fonte.
+ * Todos os estilos seguem boas práticas de legibilidade e acessibilidade.
+ * 
+ * HIERARQUIA:
+ * 1. title (32px) - Títulos principais de ecrãs
+ * 2. sectionTitle (24px) - Títulos de secções
+ * 3. subtitle (18px) - Subtítulos
+ * 4. body (16px) - Texto principal
+ * 5. bodySmall (14px) - Texto secundário
+ * 6. muted (13px) - Texto de apoio
+ */
 export const Typography = StyleSheet.create({
-  // Títulos principais
+  /** 
+   * Título principal de ecrã
+   * Uso: Nome do ecrã no topo (ex: "Batalha Naval", "Configuração")
+   */
   title: {
     fontSize: 32,
     fontWeight: 'bold',
@@ -16,7 +69,10 @@ export const Typography = StyleSheet.create({
     textAlign: 'center',
   } as TextStyle,
   
-  // Títulos de secção
+  /** 
+   * Título de secção
+   * Uso: Cabeçalhos de secções dentro de ecrãs (ex: "Seus Navios")
+   */
   sectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -24,7 +80,10 @@ export const Typography = StyleSheet.create({
     marginBottom: 15,
   } as TextStyle,
   
-  // Subtítulos
+  /** 
+   * Subtítulo
+   * Uso: Texto secundário abaixo de títulos (ex: "Escolha o modo de jogo")
+   */
   subtitle: {
     fontSize: 18,
     fontWeight: '600',
@@ -32,35 +91,50 @@ export const Typography = StyleSheet.create({
     textAlign: 'center',
   } as TextStyle,
   
-  // Texto de corpo principal
+  /** 
+   * Texto de corpo principal
+   * Uso: Parágrafos, descrições, conteúdo principal
+   */
   body: {
     fontSize: 16,
     color: Colors.textSecondary,
     lineHeight: 24,
   } as TextStyle,
   
-  // Texto de corpo pequeno
+  /** 
+   * Texto de corpo pequeno
+   * Uso: Informações secundárias, metadados
+   */
   bodySmall: {
     fontSize: 14,
     color: Colors.textSecondary,
     lineHeight: 20,
   } as TextStyle,
   
-  // Texto muted/hint
+  /** 
+   * Texto muted/hint
+   * Uso: Placeholders, hints, informações menos importantes
+   */
   muted: {
     fontSize: 13,
     color: Colors.textMuted,
     fontStyle: 'italic',
   } as TextStyle,
   
-  // Texto de botão
+  /** 
+   * Texto de botão
+   * Uso: Texto dentro de botões (sempre bold para destaque)
+   */
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: Colors.textOnPrimary,
   } as TextStyle,
   
-  // Texto com sombra para melhor legibilidade
+  /** 
+   * Texto com sombra
+   * Uso: Texto sobre fundos complexos para garantir legibilidade
+   */
   textWithShadow: {
     textShadowColor: Colors.shadowDark,
     textShadowOffset: { width: 0, height: 1 },
@@ -68,9 +142,28 @@ export const Typography = StyleSheet.create({
   } as TextStyle,
 });
 
-// === BUTTONS ===
+// ============================================
+// BUTTONS - Estilos de Botões
+// ============================================
+
+/**
+ * Estilos de botões padronizados
+ * 
+ * Fornece variantes de botões para diferentes ações e estados.
+ * Todos incluem sombras para criar sensação de profundidade e clicabilidade.
+ * 
+ * VARIANTES:
+ * - primary: Ação principal (azul)
+ * - secondary: Ação secundária (outline)
+ * - success: Confirmar/Sucesso (verde)
+ * - danger: Cancelar/Destruir (vermelho)
+ * - disabled: Estado desativado (cinza opaco)
+ */
 export const Buttons = StyleSheet.create({
-  // Botão primário padrão
+  /** 
+   * Botão primário (ação principal)
+   * Uso: Ação mais importante do ecrã (ex: "Começar Jogo", "Disparar")
+   */
   primary: {
     backgroundColor: Colors.primary,
     paddingVertical: 15,
@@ -79,15 +172,18 @@ export const Buttons = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     
-    // Sombra para elevação
+    // Sombra para criar elevação e feedback visual
     shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
-    elevation: 5, // Android
+    elevation: 5, // Sombra para Android
   } as ViewStyle,
   
-  // Botão secundário (outline)
+  /** 
+   * Botão secundário (outline)
+   * Uso: Ações secundárias menos prioritárias (ex: "Voltar", "Cancelar")
+   */
   secondary: {
     backgroundColor: 'transparent',
     paddingVertical: 15,
@@ -99,7 +195,10 @@ export const Buttons = StyleSheet.create({
     justifyContent: 'center',
   } as ViewStyle,
   
-  // Botão de sucesso
+  /** 
+   * Botão de sucesso
+   * Uso: Confirmações positivas (ex: "Confirmar", "Pronto")
+   */
   success: {
     backgroundColor: Colors.success,
     paddingVertical: 15,
@@ -114,7 +213,10 @@ export const Buttons = StyleSheet.create({
     elevation: 5,
   } as ViewStyle,
   
-  // Botão de erro/cancelar
+  /** 
+   * Botão de erro/perigo
+   * Uso: Ações destrutivas (ex: "Eliminar", "Sair")
+   */
   danger: {
     backgroundColor: Colors.error,
     paddingVertical: 15,
@@ -129,7 +231,10 @@ export const Buttons = StyleSheet.create({
     elevation: 5,
   } as ViewStyle,
   
-  // Botão desativado
+  /** 
+   * Botão desativado
+   * Uso: Botões que não podem ser clicados no momento (ex: aguardar input)
+   */
   disabled: {
     backgroundColor: Colors.primaryLight,
     paddingVertical: 15,
@@ -140,28 +245,50 @@ export const Buttons = StyleSheet.create({
     opacity: 0.5,
   } as ViewStyle,
   
-  // Botão largo (full width)
+  /** 
+   * Modificador: Botão largo (full width)
+   * Uso: Combinar com outros estilos para botão de largura total
+   * Exemplo: style={[Buttons.primary, Buttons.wide]}
+   */
   wide: {
     width: '100%',
   } as ViewStyle,
 });
 
-// === CONTAINERS ===
+// ============================================
+// CONTAINERS - Layouts e Cards
+// ============================================
+
+/**
+ * Estilos de containers e layouts
+ * 
+ * Define estruturas de página e componentes de agrupamento.
+ * Promove layouts consistentes em toda a aplicação.
+ */
 export const Containers = StyleSheet.create({
-  // Container principal
+  /** 
+   * Container de ecrã básico
+   * Uso: View principal de cada ecrã
+   */
   screen: {
     flex: 1,
     backgroundColor: Colors.bgDark,
   } as ViewStyle,
   
-  // Container com padding
+  /** 
+   * Container de ecrã com padding
+   * Uso: Ecrãs que precisam de margem interna
+   */
   screenPadded: {
     flex: 1,
     backgroundColor: Colors.bgDark,
     padding: 20,
   } as ViewStyle,
   
-  // Card padrão
+  /** 
+   * Card padrão
+   * Uso: Agrupar conteúdo relacionado com elevação visual
+   */
   card: {
     backgroundColor: Colors.bgMedium,
     padding: 20,
@@ -176,7 +303,10 @@ export const Containers = StyleSheet.create({
     elevation: 3,
   } as ViewStyle,
   
-  // Card com margem
+  /** 
+   * Card com margem inferior
+   * Uso: Cards empilhados verticalmente
+   */
   cardWithMargin: {
     backgroundColor: Colors.bgMedium,
     padding: 20,
@@ -192,7 +322,10 @@ export const Containers = StyleSheet.create({
     elevation: 3,
   } as ViewStyle,
   
-  // Secção com fundo
+  /** 
+   * Secção com fundo
+   * Uso: Agrupar conteúdo relacionado sem tanta elevação quanto card
+   */
   section: {
     backgroundColor: Colors.bgMedium,
     padding: 20,
@@ -202,7 +335,10 @@ export const Containers = StyleSheet.create({
     borderColor: Colors.border,
   } as ViewStyle,
   
-  // Container centralizado
+  /** 
+   * Container centralizado
+   * Uso: Centrar conteúdo vertical e horizontalmente
+   */
   centered: {
     flex: 1,
     justifyContent: 'center',
@@ -210,9 +346,20 @@ export const Containers = StyleSheet.create({
   } as ViewStyle,
 });
 
-// === INPUTS ===
+// ============================================
+// INPUTS - Campos de Entrada
+// ============================================
+
+/**
+ * Estilos de inputs de formulário
+ * 
+ * Define aparência de campos de texto e diferentes estados.
+ */
 export const Inputs = StyleSheet.create({
-  // Input padrão
+  /** 
+   * Input padrão
+   * Uso: TextInput básico
+   */
   default: {
     backgroundColor: Colors.bgLight,
     color: Colors.textPrimary,
@@ -223,40 +370,88 @@ export const Inputs = StyleSheet.create({
     borderColor: Colors.border,
   } as TextStyle,
   
-  // Input com foco
+  /** 
+   * Input com foco
+   * Uso: Aplicar quando TextInput está focado
+   * Exemplo: style={[Inputs.default, isFocused && Inputs.focused]}
+   */
   focused: {
     borderColor: Colors.primary,
     borderWidth: 2,
   } as ViewStyle,
   
-  // Input com erro
+  /** 
+   * Input com erro
+   * Uso: Aplicar quando input tem erro de validação
+   */
   error: {
     borderColor: Colors.error,
     borderWidth: 2,
   } as ViewStyle,
 });
 
-// === SPACING ===
+// ============================================
+// SPACING - Espaçamento Padronizado
+// ============================================
+
+/**
+ * Constantes de espaçamento
+ * 
+ * Define escala de espaçamento consistente para usar em margins e paddings.
+ * Baseada em múltiplos de 5 para harmonia visual.
+ * 
+ * @example
+ * <View style={{ marginTop: Spacing.md, padding: Spacing.lg }}>
+ */
 export const Spacing = {
-  xs: 5,
-  sm: 10,
-  md: 15,
-  lg: 20,
-  xl: 30,
-  xxl: 40,
+  xs: 5,    // Extra pequeno - ajustes finos
+  sm: 10,   // Pequeno - espaçamento mínimo
+  md: 15,   // Médio - padrão
+  lg: 20,   // Grande - separação clara
+  xl: 30,   // Extra grande - secções
+  xxl: 40,  // Muito grande - separação máxima
 };
 
-// === BORDER RADIUS ===
+// ============================================
+// BORDER RADIUS - Raios de Borda
+// ============================================
+
+/**
+ * Constantes de raio de borda
+ * 
+ * Define arredondamento padronizado para elementos.
+ * 
+ * @example
+ * <View style={{ borderRadius: BorderRadius.lg }}>
+ */
 export const BorderRadius = {
-  sm: 5,
-  md: 10,
-  lg: 15,
-  xl: 20,
-  round: 999, // Completamente redondo
+  sm: 5,      // Pequeno - arredondamento sutil
+  md: 10,     // Médio - padrão da aplicação
+  lg: 15,     // Grande - destaque
+  xl: 20,     // Extra grande - cards especiais
+  round: 999, // Completamente redondo - avatares, badges
 };
 
-// === SHADOWS ===
+// ============================================
+// SHADOWS - Sombras para Elevação
+// ============================================
+
+/**
+ * Sombras padronizadas para criar hierarquia visual
+ * 
+ * Usa Material Design elevation system como inspiração.
+ * Cada nível de sombra representa elevação diferente.
+ * 
+ * NÍVEIS:
+ * - small: Elevação baixa (botões secundários)
+ * - medium: Elevação média (cards)
+ * - large: Elevação alta (modais, botões primários)
+ * 
+ * @example
+ * <View style={[Containers.card, Shadows.medium]}>
+ */
 export const Shadows = {
+  /** Sombra pequena - elevação baixa (2dp) */
   small: {
     shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 1 },
@@ -264,6 +459,8 @@ export const Shadows = {
     shadowRadius: 2,
     elevation: 2,
   },
+  
+  /** Sombra média - elevação média (3dp) */
   medium: {
     shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 2 },
@@ -271,6 +468,8 @@ export const Shadows = {
     shadowRadius: 4,
     elevation: 3,
   },
+  
+  /** Sombra grande - elevação alta (5dp) */
   large: {
     shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 4 },
