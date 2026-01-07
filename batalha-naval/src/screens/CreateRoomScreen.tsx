@@ -1,9 +1,9 @@
-// Create room screen
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useGame } from '../context/GameContext';
+import { getServerUrl } from '../config';
 
 export default function CreateRoomScreen() {
   const router = useRouter();
@@ -22,9 +22,9 @@ export default function CreateRoomScreen() {
     setLoading(true);
     try {
       // Connect to server first if not connected
-      const defaultServerUrl = 'ws://192.168.1.100:3000'; // TODO: Make configurable
+      const serverUrl = getServerUrl();
       if (connectionStatus !== 'connected') {
-        await connectToServer(defaultServerUrl);
+        await connectToServer(serverUrl);
       }
       
       // Create room and get code

@@ -144,8 +144,10 @@ export class Network {
       this.messageHandlers.set(type, []);
     }
     
-    const handlers = this.messageHandlers.get(type)!;
-    handlers.push(handler);
+    const handlers = this.messageHandlers.get(type);
+    if (handlers) {
+      handlers.push(handler);
+    }
     
     // Return unsubscribe function
     return () => {

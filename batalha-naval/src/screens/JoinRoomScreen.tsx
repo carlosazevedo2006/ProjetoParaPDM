@@ -1,8 +1,8 @@
-// Join room screen
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useGame } from '../context/GameContext';
+import { getServerUrl, ROOM_CODE_REGEX } from '../config';
 
 export default function JoinRoomScreen() {
   const router = useRouter();
@@ -16,8 +16,7 @@ export default function JoinRoomScreen() {
 
   function validateCode(code: string): boolean {
     // Code must be 6 alphanumeric characters
-    const regex = /^[A-Z0-9]{6}$/;
-    return regex.test(code);
+    return ROOM_CODE_REGEX.test(code);
   }
 
   async function handleJoin() {
@@ -36,9 +35,9 @@ export default function JoinRoomScreen() {
     setLoading(true);
     try {
       // Connect to server if not connected
-      const defaultServerUrl = 'ws://192.168.1.100:3000'; // TODO: Make configurable
+      const serverUrl = getServerUrl();
       if (connectionStatus !== 'connected') {
-        await connectToServer(defaultServerUrl);
+        await connectToServer(serverUrl);
       }
       
       // Try to join room
