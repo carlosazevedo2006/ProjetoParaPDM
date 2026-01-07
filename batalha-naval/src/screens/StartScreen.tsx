@@ -10,6 +10,10 @@ export default function StartScreen() {
     router.push('/play-menu' as any);
   };
 
+  const handleHowToPlay = () => {
+    router.push('/how-to-play' as any);
+  };
+
   const handleSettings = () => {
     router.push('/settings' as any);
   };
@@ -37,6 +41,10 @@ export default function StartScreen() {
       <View style={styles.buttonContainer}>
         <Pressable style={styles.button} onPress={handlePlay}>
           <Text style={styles.buttonText}>🎮 Jogar</Text>
+        </Pressable>
+
+        <Pressable style={styles.button} onPress={handleHowToPlay}>
+          <Text style={styles.buttonText}>📚 Como Jogar</Text>
         </Pressable>
 
         <Pressable style={styles.button} onPress={handleSettings}>
