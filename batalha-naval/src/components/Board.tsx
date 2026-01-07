@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Board as BoardType, Position, BOARD_SIZE } from '../types';
+import { Colors } from '../styles/colors';
 
 interface BoardProps {
   board: BoardType;
@@ -17,14 +18,14 @@ export function Board({ board, onCellPress, disabled = false, showShips = true, 
     
     switch (cell.status) {
       case 'hit':
-        return '#FF4444'; // Red for hit
+        return Colors.shipHit; // Red for hit
       case 'miss':
-        return '#666666'; // Gray for miss
+        return Colors.waterHit; // Gray for miss
       case 'ship':
-        return showShips ? '#4A90E2' : '#87CEEB'; // Blue if showing ships, light blue if hidden
+        return showShips ? Colors.shipHealthy : Colors.water; // Blue if showing ships, water if hidden
       case 'empty':
       default:
-        return '#87CEEB'; // Light blue for water
+        return Colors.water; // Water blue
     }
   };
 
@@ -88,15 +89,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#333',
+    color: Colors.textSecondary,
+    textAlign: 'center',
   },
   board: {
     borderWidth: 2,
-    borderColor: '#333',
-    backgroundColor: '#fff',
+    borderColor: Colors.borderDark,
+    backgroundColor: Colors.bgMedium,
+    borderRadius: 8,
+    overflow: 'hidden',
+    
+    // Sombra para elevação
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
   },
   row: {
     flexDirection: 'row',
@@ -106,18 +117,18 @@ const styles = StyleSheet.create({
     height: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#E0E0E0',
+    backgroundColor: Colors.bgMedium,
   },
   headerText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#333',
+    color: Colors.textPrimary,
   },
   cell: {
     width: 30,
     height: 30,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: Colors.borderDark,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -127,6 +138,6 @@ const styles = StyleSheet.create({
   cellText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#fff',
+    color: Colors.textPrimary,
   },
 });

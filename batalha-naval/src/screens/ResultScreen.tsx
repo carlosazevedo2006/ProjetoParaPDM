@@ -3,6 +3,8 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useGame } from '../context/GameContext';
+import { Colors } from '../styles/colors';
+import { Typography, Buttons, Spacing, BorderRadius, Shadows } from '../styles/common';
 
 export default function ResultScreen() {
   const router = useRouter();
@@ -121,10 +123,10 @@ export default function ResultScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E3A5F',
+    backgroundColor: Colors.bgDark,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: Spacing.lg,
   },
   content: {
     width: '100%',
@@ -138,50 +140,52 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: 40,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 10,
     textAlign: 'center',
   },
   winnerText: {
     fontSize: 24,
-    color: '#87CEEB',
+    color: Colors.info,
     marginBottom: 30,
     textAlign: 'center',
   },
   statsContainer: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 20,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     marginBottom: 30,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   statsTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 15,
     textAlign: 'center',
   },
   playerStats: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgLight,
     padding: 15,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     marginBottom: 10,
   },
   myPlayerStats: {
     borderWidth: 2,
-    borderColor: '#4CAF50',
-    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+    borderColor: Colors.success,
+    backgroundColor: 'rgba(92, 184, 92, 0.2)',
   },
   playerStatsName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 8,
   },
   playerStatsText: {
     fontSize: 14,
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
     marginBottom: 4,
   },
   buttonContainer: {
@@ -190,46 +194,42 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: '#4A90E2',
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
+    ...Buttons.primary,
+    paddingVertical: 18,
     borderWidth: 3,
-    borderColor: '#2E5C8A',
+    borderColor: Colors.primaryDark,
   },
   buttonText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
   },
   secondaryButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#87CEEB',
+    ...Buttons.secondary,
+    paddingVertical: 18,
   },
   secondaryButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#87CEEB',
+    color: Colors.info,
   },
   messageBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 20,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     width: '100%',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   messageText: {
     fontSize: 16,
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
   },
   errorText: {
     fontSize: 18,
-    color: '#FF4444',
+    color: Colors.error,
     textAlign: 'center',
   },
 });

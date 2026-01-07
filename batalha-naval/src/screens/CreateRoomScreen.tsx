@@ -4,6 +4,8 @@ import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { useGame } from '../context/GameContext';
 import { getServerUrl } from '../config';
+import { Colors } from '../styles/colors';
+import { Typography, Buttons, Spacing, BorderRadius, Shadows } from '../styles/common';
 
 export default function CreateRoomScreen() {
   const router = useRouter();
@@ -125,13 +127,13 @@ export default function CreateRoomScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E3A5F',
-    padding: 20,
+    backgroundColor: Colors.bgDark,
+    padding: Spacing.lg,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginTop: 40,
     marginBottom: 40,
@@ -141,40 +143,33 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 18,
-    color: '#87CEEB',
+    color: Colors.info,
     textAlign: 'center',
     marginBottom: 20,
   },
   codeContainer: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: Colors.primary,
     padding: 30,
-    borderRadius: 15,
+    borderRadius: BorderRadius.lg,
     marginBottom: 20,
     borderWidth: 3,
-    borderColor: '#2E5C8A',
+    borderColor: Colors.primaryDark,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    ...Shadows.large,
   },
   code: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     letterSpacing: 8,
     fontFamily: 'monospace',
   },
   copyButton: {
-    backgroundColor: '#4CAF50',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
+    ...Buttons.success,
     marginBottom: 30,
   },
   copyButtonText: {
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -186,7 +181,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#87CEEB',
+    color: Colors.info,
   },
   waitingContainer: {
     flexDirection: 'row',
@@ -197,30 +192,27 @@ const styles = StyleSheet.create({
   },
   waitingText: {
     fontSize: 16,
-    color: '#4A90E2',
+    color: Colors.primary,
   },
   infoBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 20,
-    borderRadius: 10,
+    borderRadius: BorderRadius.md,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#87CEEB',
+    borderColor: Colors.border,
   },
   infoText: {
     fontSize: 14,
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
     lineHeight: 22,
     textAlign: 'center',
   },
   cancelButton: {
-    backgroundColor: '#d9534f',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
+    ...Buttons.danger,
   },
   cancelButtonText: {
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -229,7 +221,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButtonText: {
-    color: '#87CEEB',
+    color: Colors.info,
     fontSize: 16,
   },
 });

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TextInput, Pressable, Alert, ActivityIndicator 
 import { useRouter } from 'expo-router';
 import { useGame } from '../context/GameContext';
 import { getServerUrl, ROOM_CODE_REGEX } from '../config';
+import { Colors } from '../styles/colors';
+import { Typography, Buttons, Inputs, Spacing, BorderRadius, Shadows } from '../styles/common';
 
 export default function JoinRoomScreen() {
   const router = useRouter();
@@ -117,83 +119,80 @@ export default function JoinRoomScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E3A5F',
-    padding: 20,
+    backgroundColor: Colors.bgDark,
+    padding: Spacing.lg,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginTop: 40,
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 20,
-    color: '#87CEEB',
+    color: Colors.info,
     textAlign: 'center',
     marginBottom: 40,
   },
   form: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 20,
-    borderRadius: 10,
+    borderRadius: BorderRadius.md,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#87CEEB',
+    borderColor: Colors.border,
   },
   label: {
     fontSize: 16,
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 10,
     fontWeight: '600',
   },
   input: {
-    backgroundColor: '#4A90E2',
-    color: '#FFF',
+    backgroundColor: Colors.primary,
+    color: Colors.textPrimary,
     padding: 20,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     fontSize: 32,
     fontWeight: 'bold',
     letterSpacing: 8,
     textAlign: 'center',
     borderWidth: 2,
-    borderColor: '#2E5C8A',
+    borderColor: Colors.primaryDark,
     marginBottom: 10,
     fontFamily: 'monospace',
   },
   hint: {
     fontSize: 12,
-    color: '#87CEEB',
+    color: Colors.info,
     marginBottom: 20,
     textAlign: 'center',
     fontStyle: 'italic',
   },
   button: {
-    backgroundColor: '#4CAF50',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
+    ...Buttons.success,
   },
   buttonDisabled: {
-    backgroundColor: '#666',
+    backgroundColor: Colors.textMuted,
     opacity: 0.6,
   },
   buttonText: {
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
   infoBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 15,
-    borderRadius: 10,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    borderColor: '#87CEEB',
+    borderColor: Colors.border,
   },
   infoText: {
     fontSize: 13,
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
     lineHeight: 20,
     textAlign: 'center',
   },
@@ -203,7 +202,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   backButtonText: {
-    color: '#87CEEB',
+    color: Colors.info,
     fontSize: 16,
   },
 });

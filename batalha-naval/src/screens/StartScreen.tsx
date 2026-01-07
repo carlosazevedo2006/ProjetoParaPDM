@@ -2,6 +2,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, BackHandler } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Colors } from '../styles/colors';
+import { Typography, Buttons, Spacing, BorderRadius, Shadows } from '../styles/common';
 
 export default function StartScreen() {
   const router = useRouter();
@@ -69,21 +71,21 @@ export default function StartScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E3A5F',
+    backgroundColor: Colors.bgDark,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: Spacing.lg,
   },
   title: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 24,
-    color: '#87CEEB',
+    color: Colors.info,
     marginBottom: 50,
     textAlign: 'center',
   },
@@ -93,35 +95,23 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   button: {
-    backgroundColor: '#4A90E2',
-    padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
+    ...Buttons.primary,
+    paddingVertical: 20,
     borderWidth: 3,
-    borderColor: '#2E5C8A',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    borderColor: Colors.primaryDark,
+    ...Shadows.large,
   },
   exitButton: {
-    backgroundColor: '#d9534f',
-    padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
+    ...Buttons.danger,
+    paddingVertical: 20,
     borderWidth: 3,
     borderColor: '#a94442',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    ...Shadows.large,
   },
   buttonText: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
   },
   footer: {
     position: 'absolute',
@@ -130,7 +120,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: '#87CEEB',
+    color: Colors.info,
     textAlign: 'center',
   },
 });

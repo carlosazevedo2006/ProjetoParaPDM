@@ -2,6 +2,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Colors } from '../styles/colors';
+import { Typography, Buttons, Spacing, BorderRadius, Shadows } from '../styles/common';
 
 export default function HowToPlayScreen() {
   const router = useRouter();
@@ -156,108 +158,105 @@ export default function HowToPlayScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E3A5F',
+    backgroundColor: Colors.bgDark,
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    padding: 20,
+    padding: Spacing.lg,
     paddingTop: 60,
     paddingBottom: 40,
   },
   mainTitle: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#4A90E2',
+    color: Colors.primary,
     textAlign: 'center',
     marginBottom: 30,
   },
   section: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 20,
-    borderRadius: 10,
+    borderRadius: BorderRadius.md,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#4A90E2',
+    borderColor: Colors.border,
   },
   sectionTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#4A90E2',
+    color: Colors.primary,
     marginBottom: 15,
   },
   subsectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#4A90E2',
+    color: Colors.primary,
     marginTop: 15,
     marginBottom: 10,
   },
   stepTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
     marginTop: 12,
     marginBottom: 8,
   },
   text: {
     fontSize: 15,
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
     lineHeight: 22,
     marginBottom: 10,
   },
   bulletText: {
     fontSize: 14,
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
     lineHeight: 22,
     marginBottom: 6,
   },
   textSmall: {
     fontSize: 13,
-    color: '#999',
+    color: Colors.textMuted,
     marginTop: 8,
     fontStyle: 'italic',
   },
   warningText: {
     fontSize: 14,
-    color: '#ff9800',
+    color: Colors.warning,
     marginTop: 10,
     fontWeight: '600',
   },
   tipText: {
     fontSize: 14,
-    color: '#4A90E2',
+    color: Colors.primary,
     marginTop: 10,
     fontWeight: '600',
   },
   codeText: {
     fontSize: 13,
-    color: '#4A90E2',
-    backgroundColor: '#0f3460',
+    color: Colors.primary,
+    backgroundColor: Colors.bgLight,
     padding: 10,
-    borderRadius: 6,
+    borderRadius: BorderRadius.sm,
     fontFamily: 'monospace',
     marginVertical: 8,
   },
   exampleText: {
     fontSize: 13,
-    color: '#999',
-    backgroundColor: '#0f3460',
+    color: Colors.textMuted,
+    backgroundColor: Colors.bgLight,
     padding: 10,
-    borderRadius: 6,
+    borderRadius: BorderRadius.sm,
     marginVertical: 8,
     fontStyle: 'italic',
   },
   backButton: {
-    backgroundColor: '#4A90E2',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
+    ...Buttons.primary,
     marginTop: 20,
   },
   backButtonText: {
-    color: '#fff',
+    color: Colors.textPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
