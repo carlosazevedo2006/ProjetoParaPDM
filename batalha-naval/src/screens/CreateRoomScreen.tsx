@@ -15,6 +15,7 @@ export default function CreateRoomScreen() {
   useEffect(() => {
     // Create room automatically when component mounts
     createRoomAndGetCode();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function createRoomAndGetCode() {
@@ -70,6 +71,7 @@ export default function CreateRoomScreen() {
     if (gameState?.roomPlayerCount === 2) {
       router.replace('/lobby' as any);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState?.roomPlayerCount]);
 
   return (
@@ -103,7 +105,7 @@ export default function CreateRoomScreen() {
           <View style={styles.infoBox}>
             <Text style={styles.infoText}>
               💡 Partilha este código com o outro jogador!{'\n\n'}
-              Ele deve escolher "Entrar em Sala" e inserir este código.
+              Ele deve escolher &quot;Entrar em Sala&quot; e inserir este código.
             </Text>
           </View>
 
