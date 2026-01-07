@@ -2,6 +2,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Colors } from '../styles/colors';
+import { Typography, Buttons, Spacing, BorderRadius, Shadows } from '../styles/common';
 
 export default function MultiplayerModeScreen() {
   const router = useRouter();
@@ -47,20 +49,20 @@ export default function MultiplayerModeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E3A5F',
+    backgroundColor: Colors.bgDark,
     justifyContent: 'center',
-    padding: 20,
+    padding: Spacing.lg,
   },
   title: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 20,
-    color: '#87CEEB',
+    color: Colors.info,
     textAlign: 'center',
     marginBottom: 50,
   },
@@ -69,30 +71,24 @@ const styles = StyleSheet.create({
     gap: 25,
   },
   button: {
-    backgroundColor: '#4A90E2',
-    padding: 25,
-    borderRadius: 12,
-    alignItems: 'center',
+    ...Buttons.primary,
+    paddingVertical: 25,
     borderWidth: 3,
-    borderColor: '#2E5C8A',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    borderColor: Colors.primaryDark,
+    ...Shadows.large,
   },
   buttonIcon: {
     fontSize: 48,
     marginBottom: 10,
   },
   buttonText: {
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 5,
   },
   buttonDescription: {
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
     fontSize: 14,
   },
   backButton: {
@@ -101,7 +97,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   backButtonText: {
-    color: '#87CEEB',
+    color: Colors.info,
     fontSize: 16,
   },
 });

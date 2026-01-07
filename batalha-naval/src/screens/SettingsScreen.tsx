@@ -3,6 +3,8 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable, Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useGame } from '../context/GameContext';
+import { Colors } from '../styles/colors';
+import { Typography, Buttons, Spacing, BorderRadius, Shadows } from '../styles/common';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -88,60 +90,60 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E3A5F',
+    backgroundColor: Colors.bgDark,
   },
   content: {
-    padding: 20,
+    padding: Spacing.lg,
     paddingTop: 60,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: 30,
   },
   section: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 20,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   sectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 20,
   },
   statsContainer: {
     gap: 15,
   },
   statItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgLight,
     padding: 15,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   statLabel: {
     fontSize: 16,
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
   },
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
   },
   clearButton: {
-    backgroundColor: '#d9534f',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
+    ...Buttons.danger,
+    paddingVertical: 12,
     marginTop: 15,
   },
   clearButtonText: {
-    color: '#fff',
+    color: Colors.textPrimary,
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -151,7 +153,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   backButtonText: {
-    color: '#87CEEB',
+    color: Colors.info,
     fontSize: 16,
   },
 });

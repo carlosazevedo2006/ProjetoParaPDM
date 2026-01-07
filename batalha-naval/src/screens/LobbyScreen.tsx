@@ -3,6 +3,8 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useGame } from '../context/GameContext';
+import { Colors } from '../styles/colors';
+import { Typography, Buttons, Spacing, BorderRadius, Shadows } from '../styles/common';
 
 export default function LobbyScreen() {
   const router = useRouter();
@@ -106,42 +108,44 @@ export default function LobbyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E3A5F',
-    padding: 20,
+    backgroundColor: Colors.bgDark,
+    padding: Spacing.lg,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginTop: 40,
     marginBottom: 20,
   },
   statusBar: {
     padding: 12,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
     marginBottom: 20,
   },
   statusText: {
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
   infoBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 15,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   infoLabel: {
     fontSize: 14,
-    color: '#87CEEB',
+    color: Colors.info,
     marginTop: 5,
   },
   infoValue: {
     fontSize: 18,
-    color: '#FFF',
+    color: Colors.textPrimary,
     fontWeight: 'bold',
     marginBottom: 10,
   },
@@ -152,64 +156,66 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 10,
   },
   playerCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 20,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: Colors.borderLight,
   },
   myPlayerCard: {
-    borderColor: '#4CAF50',
-    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+    borderColor: Colors.success,
+    backgroundColor: 'rgba(92, 184, 92, 0.2)',
   },
   playerName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 5,
   },
   playerStatus: {
     fontSize: 14,
-    color: '#87CEEB',
+    color: Colors.info,
   },
   readyBox: {
-    backgroundColor: 'rgba(76, 175, 80, 0.3)',
+    backgroundColor: 'rgba(92, 184, 92, 0.2)',
     padding: 20,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
     marginBottom: 20,
     borderWidth: 2,
-    borderColor: '#4CAF50',
+    borderColor: Colors.success,
   },
   readyText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 5,
   },
   readySubtext: {
     fontSize: 14,
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
   },
   instructions: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.bgMedium,
     padding: 15,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   instructionsTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 10,
   },
   instructionsText: {
     fontSize: 14,
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
     lineHeight: 22,
   },
   backButton: {
@@ -217,7 +223,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButtonText: {
-    color: '#87CEEB',
+    color: Colors.info,
     fontSize: 16,
   },
 });

@@ -3,6 +3,8 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useGame } from '../context/GameContext';
+import { Colors } from '../styles/colors';
+import { Typography, Buttons, Spacing, BorderRadius, Shadows } from '../styles/common';
 
 export default function PlayMenuScreen() {
   const router = useRouter();
@@ -54,21 +56,21 @@ export default function PlayMenuScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1E3A5F',
+    backgroundColor: Colors.bgDark,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: Spacing.lg,
   },
   title: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 20,
-    color: '#87CEEB',
+    color: Colors.info,
     marginBottom: 50,
     textAlign: 'center',
   },
@@ -78,27 +80,21 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   button: {
-    backgroundColor: '#4A90E2',
-    padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
+    ...Buttons.primary,
+    paddingVertical: 20,
     borderWidth: 3,
-    borderColor: '#2E5C8A',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    borderColor: Colors.primaryDark,
+    ...Shadows.large,
   },
   buttonText: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: Colors.textPrimary,
     marginBottom: 5,
   },
   buttonSubtext: {
     fontSize: 14,
-    color: '#E0E0E0',
+    color: Colors.textSecondary,
   },
   backButton: {
     padding: 15,
@@ -106,7 +102,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   backButtonText: {
-    color: '#87CEEB',
+    color: Colors.info,
     fontSize: 16,
   },
   footer: {
@@ -116,7 +112,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: '#87CEEB',
+    color: Colors.info,
     textAlign: 'center',
   },
 });
