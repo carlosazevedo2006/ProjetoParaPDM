@@ -65,9 +65,14 @@ Para mais detalhes:
    npm run server
    ```
 
-3. Anote o endereço IP mostrado
-4. Configure o app com esse IP em cada dispositivo
-5. Entre na mesma sala e jogue!
+3. (Opcional) Configure o URL do servidor:
+   - Criar arquivo `.env` com `EXPO_PUBLIC_SERVER_URL=ws://SEU_IP:3000`
+   - Ou editar `src/config/index.ts`
+
+4. No app:
+   - Jogador 1: Escolher "Criar Sala" → Compartilhar código
+   - Jogador 2: Escolher "Entrar em Sala" → Inserir código
+   - Jogar! 🎮
 
 ## 📁 Estrutura do Projeto
 
