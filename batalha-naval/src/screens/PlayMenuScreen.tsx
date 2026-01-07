@@ -14,7 +14,7 @@ export default function PlayMenuScreen() {
   };
 
   const handleMultiplayerGame = () => {
-    router.push('/multiplayer-connect' as any);
+    router.push('/multiplayer-mode' as any);
   };
 
   const handleBack = () => {

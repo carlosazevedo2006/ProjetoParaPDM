@@ -5,8 +5,53 @@ const { v4: uuidv4 } = require('uuid');
 const PORT = 3000;
 const BOARD_SIZE = 10;
 
-// Room storage
+// Room storage: Map<roomCode, RoomData>
 const rooms = new Map();
+// Legacy room storage for backward compatibility: Map<roomId, RoomData>
+const legacyRooms = new Map();
+
+// Function to generate random 6-character room code
+function generateRoomCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  // Check if code already exists (unlikely but possible)
+  if (rooms.has(code)) {
+    return generateRoomCode(); // Recursive until unique
+  }
+  return code;
+}
+
+// Cleanup empty rooms periodically
+function cleanupEmptyRooms() {
+  const now = Date.now();
+  const timeout = 30 * 60 * 1000; // 30 minutes
+  
+  for (const [code, room] of rooms.entries()) {
+    // Remove rooms with no players or very old rooms
+    if (!room.clients || room.clients.length === 0) {
+      if (now - room.createdAt > timeout) {
+        console.log(`🗑️ Removing old empty room: ${code}`);
+        rooms.delete(code);
+      }
+    }
+  }
+  
+  // Also cleanup legacy rooms
+  for (const [roomId, room] of legacyRooms.entries()) {
+    if (!room.clients || room.clients.length === 0) {
+      if (now - room.createdAt > timeout) {
+        console.log(`🗑️ Removing old legacy room: ${roomId}`);
+        legacyRooms.delete(roomId);
+      }
+    }
+  }
+}
+
+// Run cleanup every 5 minutes
+setInterval(cleanupEmptyRooms, 5 * 60 * 1000);
 
 // Helper to create empty board
 function createEmptyBoard() {
@@ -105,11 +150,6 @@ function placeShipsOnBoard(board, ships) {
 
 // Broadcast state to all clients in room
 function broadcastGameState(room) {
-  const message = {
-    type: 'SERVER_STATE',
-    gameState: room.gameState
-  };
-  
   room.clients.forEach((client, index) => {
     if (client.ws.readyState === WebSocket.OPEN) {
       // Send personalized state (each player sees their own ships)
@@ -142,12 +182,14 @@ const wss = new WebSocket.Server({ port: PORT });
 
 console.log(`🚀 Batalha Naval WebSocket server running on port ${PORT}`);
 console.log(`📡 Clients can connect to ws://<your-ip>:${PORT}`);
+console.log(`🎮 Room system enabled with 6-character codes`);
 
 wss.on('connection', (ws) => {
   console.log('👤 New client connected');
   
   let currentRoom = null;
   let playerIndex = null;
+  let currentRoomCode = null;
   
   ws.on('message', (data) => {
     try {
@@ -155,7 +197,132 @@ wss.on('connection', (ws) => {
       console.log('📨 Received:', message.type);
       
       switch (message.type) {
+        case 'CREATE_ROOM': {
+          // Generate new room code
+          const code = generateRoomCode();
+          currentRoomCode = code;
+          
+          console.log(`🏠 Creating room with code: ${code}`);
+          
+          const player1 = {
+            id: uuidv4(),
+            name: 'Player 1',
+            board: createEmptyBoard(),
+            opponentBoard: createEmptyBoard(),
+            ready: false
+          };
+          
+          currentRoom = {
+            roomCode: code,
+            clients: [{ ws, playerId: player1.id }],
+            gameState: {
+              roomId: code,
+              roomCode: code,
+              roomPlayerCount: 1,
+              players: [player1, null],
+              currentTurn: 0,
+              phase: 'setup',
+              mode: 'multiplayer'
+            },
+            createdAt: Date.now()
+          };
+          
+          rooms.set(code, currentRoom);
+          playerIndex = 0;
+          
+          // Send room code to client
+          ws.send(JSON.stringify({
+            type: 'ROOM_CREATED',
+            payload: { code }
+          }));
+          
+          // Send player assignment
+          ws.send(JSON.stringify({
+            type: 'PLAYER_ASSIGNED',
+            playerId: player1.id
+          }));
+          
+          console.log(`✅ Room ${code} created with Player 1`);
+          broadcastGameState(currentRoom);
+          break;
+        }
+        
+        case 'JOIN_ROOM': {
+          const { code } = message.payload || {};
+          
+          if (!code) {
+            ws.send(JSON.stringify({
+              type: 'ERROR',
+              message: 'Room code is required'
+            }));
+            return;
+          }
+          
+          currentRoomCode = code;
+          currentRoom = rooms.get(code);
+          
+          if (!currentRoom) {
+            console.log(`❌ Room not found: ${code}`);
+            ws.send(JSON.stringify({
+              type: 'ROOM_NOT_FOUND',
+              payload: { code }
+            }));
+            return;
+          }
+          
+          if (currentRoom.clients.length >= 2) {
+            console.log(`❌ Room full: ${code}`);
+            ws.send(JSON.stringify({
+              type: 'ROOM_FULL',
+              payload: { code }
+            }));
+            return;
+          }
+          
+          // Add player 2
+          const player2 = {
+            id: uuidv4(),
+            name: 'Player 2',
+            board: createEmptyBoard(),
+            opponentBoard: createEmptyBoard(),
+            ready: false
+          };
+          
+          currentRoom.clients.push({ ws, playerId: player2.id });
+          currentRoom.gameState.players[1] = player2;
+          currentRoom.gameState.roomPlayerCount = 2;
+          playerIndex = 1;
+          
+          console.log(`👥 Player 2 joined room: ${code}`);
+          
+          // Notify player 2 they joined
+          ws.send(JSON.stringify({
+            type: 'ROOM_JOINED',
+            payload: { code, playerCount: 2 }
+          }));
+          
+          // Send player assignment
+          ws.send(JSON.stringify({
+            type: 'PLAYER_ASSIGNED',
+            playerId: player2.id
+          }));
+          
+          // Notify both players room is ready
+          currentRoom.clients.forEach(client => {
+            if (client.ws.readyState === WebSocket.OPEN) {
+              client.ws.send(JSON.stringify({
+                type: 'ROOM_READY',
+                payload: { code }
+              }));
+            }
+          });
+          
+          broadcastGameState(currentRoom);
+          break;
+        }
+        
         case 'JOIN_OR_CREATE': {
+          // Legacy support for old connection method
           const { roomId, playerName } = message;
           
           if (!roomId || !playerName) {
@@ -166,12 +333,12 @@ wss.on('connection', (ws) => {
             return;
           }
           
-          // Get or create room
-          let room = rooms.get(roomId);
+          // Get or create room (legacy)
+          let room = legacyRooms.get(roomId);
           
           if (!room) {
             // Create new room
-            console.log(`🏠 Creating room: ${roomId}`);
+            console.log(`🏠 Creating legacy room: ${roomId}`);
             
             const player1 = {
               id: uuidv4(),
@@ -190,17 +357,18 @@ wss.on('connection', (ws) => {
                 currentTurn: 0,
                 phase: 'setup',
                 mode: 'multiplayer'
-              }
+              },
+              createdAt: Date.now()
             };
             
-            rooms.set(roomId, room);
+            legacyRooms.set(roomId, room);
             currentRoom = room;
             playerIndex = 0;
             
-            console.log(`✅ Player 1 joined room: ${roomId}`);
+            console.log(`✅ Player 1 joined legacy room: ${roomId}`);
           } else if (room.clients.length < 2) {
             // Join existing room as player 2
-            console.log(`👥 Player 2 joining room: ${roomId}`);
+            console.log(`👥 Player 2 joining legacy room: ${roomId}`);
             
             const player2 = {
               id: uuidv4(),
@@ -215,7 +383,7 @@ wss.on('connection', (ws) => {
             currentRoom = room;
             playerIndex = 1;
             
-            console.log(`✅ Player 2 joined room: ${roomId}`);
+            console.log(`✅ Player 2 joined legacy room: ${roomId}`);
           } else {
             ws.send(JSON.stringify({
               type: 'ERROR',
@@ -258,7 +426,7 @@ wss.on('connection', (ws) => {
           player.board = placeShipsOnBoard(player.board, ships);
           player.ready = true;
           
-          console.log(`✅ Player ${playerIndex + 1} is ready in room: ${currentRoom.roomId}`);
+          console.log(`✅ Player ${playerIndex + 1} is ready in room: ${currentRoomCode || currentRoom.roomId}`);
           
           // Check if both players are ready
           const bothReady = currentRoom.gameState.players[0]?.ready && 
@@ -266,7 +434,7 @@ wss.on('connection', (ws) => {
           
           if (bothReady) {
             currentRoom.gameState.phase = 'playing';
-            console.log(`🎮 Game starting in room: ${currentRoom.roomId}`);
+            console.log(`🎮 Game starting in room: ${currentRoomCode || currentRoom.roomId}`);
           }
           
           broadcastGameState(currentRoom);
@@ -328,7 +496,7 @@ wss.on('connection', (ws) => {
           if (allSunk) {
             currentRoom.gameState.phase = 'finished';
             currentRoom.gameState.winner = playerIndex;
-            console.log(`🏆 Player ${playerIndex + 1} wins in room: ${currentRoom.roomId}`);
+            console.log(`🏆 Player ${playerIndex + 1} wins in room: ${currentRoomCode || currentRoom.roomId}`);
           } else {
             // Switch turn
             currentRoom.gameState.currentTurn = opponentIndex;
@@ -360,7 +528,7 @@ wss.on('connection', (ws) => {
           currentRoom.gameState.phase = 'setup';
           currentRoom.gameState.winner = undefined;
           
-          console.log(`🔄 Game reset in room: ${currentRoom.roomId}`);
+          console.log(`🔄 Game reset in room: ${currentRoomCode || currentRoom.roomId}`);
           broadcastGameState(currentRoom);
           break;
         }
@@ -390,14 +558,24 @@ wss.on('connection', (ws) => {
         currentRoom.clients.splice(clientIndex, 1);
       }
       
+      const roomIdentifier = currentRoomCode || currentRoom.roomId;
+      
       // If room is empty, delete it
       if (currentRoom.clients.length === 0) {
-        rooms.delete(currentRoom.roomId);
-        console.log(`🗑️ Room deleted: ${currentRoom.roomId}`);
+        if (currentRoomCode) {
+          rooms.delete(currentRoomCode);
+        } else {
+          legacyRooms.delete(currentRoom.roomId);
+        }
+        console.log(`🗑️ Room deleted: ${roomIdentifier}`);
       } else {
         // Notify remaining clients
         currentRoom.clients.forEach(client => {
           if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({
+              type: 'PLAYER_LEFT',
+              payload: { code: roomIdentifier }
+            }));
             client.ws.send(JSON.stringify({
               type: 'DISCONNECT',
               message: 'Opponent disconnected'

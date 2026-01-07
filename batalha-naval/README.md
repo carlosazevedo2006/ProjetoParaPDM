@@ -11,6 +11,7 @@ Batalha Naval é um jogo clássico de estratégia onde dois jogadores tentam afu
 
 - **Modo Local**: Jogue com um amigo no mesmo dispositivo (turnos alternados)
 - **Modo Multiplayer**: Jogue via WiFi com dois dispositivos diferentes em tempo real
+- **Sistema de Salas com Códigos**: 🆕 Conecte-se facilmente usando códigos de 6 caracteres - sem necessidade de configurar IPs!
 - **Interface intuitiva**: UI moderna e responsiva
 - **Sincronização em tempo real**: Estado do jogo sincronizado via WebSocket
 
@@ -39,7 +40,13 @@ Escaneie o QR code com o app **Expo Go** em seu smartphone.
 
 ### 3. Para Modo Multiplayer
 
-Consulte os guias detalhados:
+🆕 **Novo: Sistema de Salas com Códigos!**
+
+Agora é muito mais simples jogar multiplayer - não é mais necessário configurar IPs manualmente!
+
+**[ROOM_SYSTEM_GUIDE.md](./ROOM_SYSTEM_GUIDE.md)** - 🆕 Guia do novo sistema de salas com códigos
+
+Para mais detalhes:
 
 - **[MULTIPLAYER_GUIDE.md](./MULTIPLAYER_GUIDE.md)** - Guia passo-a-passo completo
 - **[SERVER_README.md](./SERVER_README.md)** - Documentação técnica do servidor
@@ -58,9 +65,14 @@ Consulte os guias detalhados:
    npm run server
    ```
 
-3. Anote o endereço IP mostrado
-4. Configure o app com esse IP em cada dispositivo
-5. Entre na mesma sala e jogue!
+3. (Opcional) Configure o URL do servidor:
+   - Criar arquivo `.env` com `EXPO_PUBLIC_SERVER_URL=ws://SEU_IP:3000`
+   - Ou editar `src/config/index.ts`
+
+4. No app:
+   - Jogador 1: Escolher "Criar Sala" → Compartilhar código
+   - Jogador 2: Escolher "Entrar em Sala" → Inserir código
+   - Jogar! 🎮
 
 ## 📁 Estrutura do Projeto
 

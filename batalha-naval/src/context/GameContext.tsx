@@ -1,7 +1,7 @@
 // Game context for managing game state
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { GameState, Player, Position, Ship, Statistics } from '../types';
+import { GameState, Player, Position, Ship, Statistics, NetworkMessage } from '../types';
 import { createEmptyBoard, processFireOnBoard, areAllShipsSunk, placeShip, getOpponentBoardView } from '../utils/boardUtils';
 import { getNetwork, resetNetwork } from '../services/network';
 
@@ -22,6 +22,8 @@ interface GameContextType {
   // Multiplayer actions
   connectToServer: (serverUrl: string) => Promise<void>;
   joinOrCreateRoom: (roomId: string, playerName: string) => void;
+  createRoom: () => Promise<string>; // Returns room code
+  joinRoom: (code: string) => Promise<boolean>; // Returns success
   disconnectFromServer: () => void;
   testConnection: (serverUrl: string) => Promise<boolean>;
   
@@ -255,6 +257,134 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Create a new room
+  const createRoom = useCallback(async (): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const network = getNetwork();
+      
+      if (!network.isConnected()) {
+        reject(new Error('Not connected to server'));
+        return;
+      }
+
+      // Set up handler for room creation response
+      const unsubscribe = network.on('ROOM_CREATED', (message: any) => {
+        if (message.type === 'ROOM_CREATED') {
+          const code = message.payload.code;
+          console.log('[GameContext] Room created with code:', code);
+          
+          // Update game state with room code
+          setGameState(prev => prev ? {
+            ...prev,
+            roomCode: code,
+            roomPlayerCount: 1,
+          } : null);
+          
+          unsubscribe();
+          resolve(code);
+        }
+      });
+
+      // Set timeout
+      setTimeout(() => {
+        unsubscribe();
+        reject(new Error('Timeout waiting for room creation'));
+      }, 10000);
+
+      // Send room creation request
+      const createRoomMessage: NetworkMessage = { type: 'CREATE_ROOM' };
+      network.send(createRoomMessage);
+    });
+  }, []);
+
+  // Join an existing room
+  const joinRoom = useCallback(async (code: string): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+      const network = getNetwork();
+      
+      if (!network.isConnected()) {
+        reject(new Error('Not connected to server'));
+        return;
+      }
+
+      let resolved = false;
+
+      const successHandler = (message: any) => {
+        if (!resolved && message.type === 'ROOM_JOINED') {
+          resolved = true;
+          console.log('[GameContext] Joined room:', message.payload.code);
+          
+          // Update game state
+          setGameState(prev => prev ? {
+            ...prev,
+            roomCode: message.payload.code,
+            roomPlayerCount: message.payload.playerCount,
+          } : null);
+          
+          cleanup();
+          resolve(true);
+        }
+      };
+
+      const readyHandler = (message: any) => {
+        if (!resolved && message.type === 'ROOM_READY') {
+          console.log('[GameContext] Room is ready');
+          // Update player count to 2
+          setGameState(prev => prev ? {
+            ...prev,
+            roomPlayerCount: 2,
+          } : null);
+        }
+      };
+
+      const notFoundHandler = (message: any) => {
+        if (!resolved && message.type === 'ROOM_NOT_FOUND') {
+          resolved = true;
+          console.log('[GameContext] Room not found');
+          cleanup();
+          resolve(false);
+        }
+      };
+
+      const fullHandler = (message: any) => {
+        if (!resolved && message.type === 'ROOM_FULL') {
+          resolved = true;
+          console.log('[GameContext] Room is full');
+          cleanup();
+          resolve(false);
+        }
+      };
+
+      const unsubscribeSuccess = network.on('ROOM_JOINED', successHandler);
+      const unsubscribeReady = network.on('ROOM_READY', readyHandler);
+      const unsubscribeNotFound = network.on('ROOM_NOT_FOUND', notFoundHandler);
+      const unsubscribeFull = network.on('ROOM_FULL', fullHandler);
+
+      const cleanup = () => {
+        unsubscribeSuccess();
+        unsubscribeReady();
+        unsubscribeNotFound();
+        unsubscribeFull();
+      };
+
+      // Set timeout
+      setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          cleanup();
+          reject(new Error('Timeout waiting for room join'));
+        }
+      }, 10000);
+
+      // Send join room request
+      const joinRoomMessage: NetworkMessage = { 
+        type: 'JOIN_ROOM', 
+        payload: { code } 
+      };
+      network.send(joinRoomMessage);
+    });
+  }, []);
+
   // Load statistics from AsyncStorage
   const loadStatistics = useCallback(async () => {
     try {
@@ -348,6 +478,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     resetGame,
     connectToServer,
     joinOrCreateRoom,
+    createRoom,
+    joinRoom,
     disconnectFromServer,
     testConnection,
     updateStatistics,

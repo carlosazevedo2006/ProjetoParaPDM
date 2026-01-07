@@ -46,6 +46,8 @@ export interface Statistics {
 
 export interface GameState {
   roomId: string;
+  roomCode?: string;
+  roomPlayerCount?: number;
   players: [Player | null, Player | null];
   currentTurn: 0 | 1;
   phase: 'setup' | 'playing' | 'finished';
@@ -56,6 +58,14 @@ export interface GameState {
 
 export type NetworkMessage =
   | { type: 'JOIN_OR_CREATE'; roomId: string; playerName: string }
+  | { type: 'CREATE_ROOM' }
+  | { type: 'ROOM_CREATED'; payload: { code: string } }
+  | { type: 'JOIN_ROOM'; payload: { code: string } }
+  | { type: 'ROOM_JOINED'; payload: { code: string; playerCount: number } }
+  | { type: 'ROOM_NOT_FOUND'; payload: { code: string } }
+  | { type: 'ROOM_FULL'; payload: { code: string } }
+  | { type: 'ROOM_READY'; payload: { code: string } }
+  | { type: 'PLAYER_LEFT'; payload: { code: string } }
   | { type: 'PLAYER_READY'; ships: Ship[] }
   | { type: 'FIRE'; position: Position }
   | { type: 'RESET' }
