@@ -5,7 +5,7 @@ type MessageHandler = (message: NetworkMessage) => void;
 
 export class Network {
   private ws: WebSocket | null = null;
-  private messageHandlers: MessageHandler[] = [];
+  private messageHandlers: Map<string, MessageHandler[]> = new Map();
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 2000;
@@ -49,7 +49,14 @@ export class Network {
           try {
             const message: NetworkMessage = JSON.parse(event.data);
             console.log('[Network] Received message:', message.type);
-            this.messageHandlers.forEach(handler => handler(message));
+            
+            // Call all handlers for this message type
+            const handlers = this.messageHandlers.get(message.type) || [];
+            handlers.forEach(handler => handler(message));
+            
+            // Also call global handlers (handlers registered for all messages)
+            const globalHandlers = this.messageHandlers.get('*') || [];
+            globalHandlers.forEach(handler => handler(message));
           } catch (error) {
             console.error('[Network] Failed to parse message:', error);
           }
@@ -66,7 +73,9 @@ export class Network {
             type: 'CONNECTION_ERROR',
             message: 'Failed to connect to server',
           };
-          this.messageHandlers.forEach(handler => handler(errorMessage));
+          
+          const handlers = this.messageHandlers.get('CONNECTION_ERROR') || [];
+          handlers.forEach(handler => handler(errorMessage));
           
           reject(error);
         };
@@ -82,7 +91,9 @@ export class Network {
             type: 'DISCONNECT',
             message: 'Disconnected from server',
           };
-          this.messageHandlers.forEach(handler => handler(disconnectMessage));
+          
+          const handlers = this.messageHandlers.get('DISCONNECT') || [];
+          handlers.forEach(handler => handler(disconnectMessage));
 
           // Attempt to reconnect
           if (this.shouldReconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
@@ -116,20 +127,51 @@ export class Network {
         type: 'CONNECTION_ERROR',
         message: 'Not connected to server',
       };
-      this.messageHandlers.forEach(handler => handler(errorMessage));
+      
+      const handlers = this.messageHandlers.get('CONNECTION_ERROR') || [];
+      handlers.forEach(handler => handler(errorMessage));
     }
   }
 
   /**
-   * Register a message handler
+   * Register a message handler for a specific message type
+   * @param type The message type to listen for, or '*' for all messages
+   * @param handler The handler function
+   * @returns Unsubscribe function
    */
-  onMessage(handler: MessageHandler): () => void {
-    this.messageHandlers.push(handler);
+  on(type: string, handler: MessageHandler): () => void {
+    if (!this.messageHandlers.has(type)) {
+      this.messageHandlers.set(type, []);
+    }
+    
+    const handlers = this.messageHandlers.get(type)!;
+    handlers.push(handler);
     
     // Return unsubscribe function
     return () => {
-      this.messageHandlers = this.messageHandlers.filter(h => h !== handler);
+      const updatedHandlers = this.messageHandlers.get(type)?.filter(h => h !== handler);
+      if (updatedHandlers) {
+        this.messageHandlers.set(type, updatedHandlers);
+      }
     };
+  }
+
+  /**
+   * Remove a message handler
+   */
+  off(type: string, handler: MessageHandler): void {
+    const handlers = this.messageHandlers.get(type);
+    if (handlers) {
+      const filtered = handlers.filter(h => h !== handler);
+      this.messageHandlers.set(type, filtered);
+    }
+  }
+
+  /**
+   * Register a message handler (legacy support)
+   */
+  onMessage(handler: MessageHandler): () => void {
+    return this.on('*', handler);
   }
 
   /**
@@ -156,7 +198,7 @@ export class Network {
       this.ws = null;
     }
     
-    this.messageHandlers = [];
+    this.messageHandlers.clear();
     this.reconnectAttempts = 0;
   }
 
