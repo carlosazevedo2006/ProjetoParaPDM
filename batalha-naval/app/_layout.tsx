@@ -15,6 +15,7 @@ export default function RootLayout() {
         <Stack>
           <Stack.Screen name="start" options={{ headerShown: false }} />
           <Stack.Screen name="play-menu" options={{ headerShown: false }} />
+          <Stack.Screen name="how-to-play" options={{ headerShown: false }} />
           <Stack.Screen name="settings" options={{ headerShown: false }} />
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="multiplayer-connect" options={{ headerShown: false }} />
